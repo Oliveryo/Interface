@@ -1,0 +1,10 @@
+## Interface: 11200
+## Title: aurae
+## Notes: Progress bars for enemy buffs, debuffs and DRs
+## Author: shirsig
+## SavedVariablesPerCharacter: aurae_settings
+aurae.lua
+data\actions.lua
+data\ccs.lua
+data\debuffs.lua
+data\buffs.lua

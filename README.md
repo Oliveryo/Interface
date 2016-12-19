@@ -8,6 +8,6 @@
 6. Browse for folder will pop up, find your world of warcraft map then click OK.
 7. Delete your WTF folder.
 8. Download my WTF folder and place it in your world of warcraft map https://github.com/Oliveryo/WTF
-8. If you want to keep the WTF folder updated with my changes repeat step 4, 5 and 6.
+8. If you want to keep the WTF folder updated with my changes repeat step 4, 5 and 6 and ignore 8.
 9. Open WTF folder and rename APEVIA94 to your account name.
 10. Open (your accountname) folder and change the server if you don't play on Nostalrius PvP.

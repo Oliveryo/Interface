@@ -26,7 +26,7 @@ pfUI:RegisterModule("addons", function ()
 
   -- title
   pfUI.addons.caption = pfUI.addons:CreateFontString("Status", "LOW", "GameFontNormal")
-  pfUI.addons.caption:SetFont("Interface\\AddOns\\pfUI\\fonts\\" .. pfUI_config.global.font_default .. ".ttf", pfUI_config.global.font_size + 4, "OUTLINE")
+  pfUI.addons.caption:SetFont(pfUI.font_default, pfUI_config.global.font_size + 4, "OUTLINE")
   pfUI.addons.caption:SetTextColor(.2, 1, .8, 1)
   pfUI.addons.caption:SetPoint("TOP", 0, -10)
   pfUI.addons.caption:SetJustifyH("LEFT")
@@ -57,7 +57,7 @@ pfUI:RegisterModule("addons", function ()
   end)
 
   -- list
-  pfUI.addons.list = CreateFrame("Frame", "pfAddonList", UIParent)
+  pfUI.addons.list = CreateFrame("Frame", "pfAddonList", pfUI.addons)
   pfUI.addons.list:SetHeight(GetNumAddOns() * 25)
   pfUI.addons.list:SetWidth(350)
   pfUI.addons.list:SetPoint("CENTER", 0,0)
@@ -76,7 +76,7 @@ pfUI:RegisterModule("addons", function ()
 
     -- caption
     frame.caption = frame:CreateFontString("Status", "LOW", "GameFontNormal")
-    frame.caption:SetFont("Interface\\AddOns\\pfUI\\fonts\\" .. pfUI_config.global.font_default .. ".ttf", pfUI_config.global.font_size + 2, "OUTLINE")
+    frame.caption:SetFont(pfUI.font_default, pfUI_config.global.font_size + 2, "OUTLINE")
     frame.caption:SetAllPoints(frame)
     frame.caption:SetFontObject(GameFontWhite)
     frame.caption:SetJustifyH("LEFT")

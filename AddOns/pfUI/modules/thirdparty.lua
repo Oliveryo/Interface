@@ -3,8 +3,7 @@ pfUI:RegisterModule("thirdparty", function ()
 
   -- DPSMate Integration
   -- Move DPSMate to right chat and let the chat-hide button toggle it
-  if DPSMate and pfUI_config.thirdparty.dpsmate.enable == "1" then
-
+  local function pfSetupDPSMate()
     -- set DPSMate appearance to match pfUI
     DPSMateSettings["windows"][1]["titlebarheight"] = 18
     DPSMateSettings["windows"][1]["titlebarfontsize"] = 12
@@ -33,28 +32,47 @@ pfUI:RegisterModule("thirdparty", function ()
     end
     function DPSMate_DPSMate.Show ()
       pfUIhookDPSMate_Show(DPSMate_DPSMate)
-      DPSMate_DPSMate:ClearAllPoints()
-      DPSMate_DPSMate:SetAllPoints(pfUI.chat.right)
 
-      if DPSMate_DPSMate_ScrollFrame then
-        DPSMate_DPSMate_ScrollFrame:ClearAllPoints()
-        DPSMate_DPSMate_ScrollFrame:SetAllPoints(pfUI.chat.right)
-        DPSMate_DPSMate_ScrollFrame:SetWidth(pfUI.chat.right:GetWidth())
+      if pfUI.chat and pfUI.panel then
+        DPSMate_DPSMate:ClearAllPoints()
+        DPSMate_DPSMate:SetAllPoints(pfUI.chat.right)
 
-        DPSMate_DPSMate_ScrollFrame:SetPoint("TOPLEFT", DPSMate_DPSMate_Head, "BOTTOMLEFT", 0, 0)
-        DPSMate_DPSMate_ScrollFrame:SetPoint("BOTTOMRIGHT", pfUI.chat.right, "BOTTOMRIGHT", 0, pfUI.panel.right:GetHeight())
-        DPSMate_DPSMate_Resize:Hide()
+        if DPSMate_DPSMate_ScrollFrame then
+          DPSMate_DPSMate_ScrollFrame:ClearAllPoints()
+          DPSMate_DPSMate_ScrollFrame:SetAllPoints(pfUI.chat.right)
+          DPSMate_DPSMate_ScrollFrame:SetWidth(pfUI.chat.right:GetWidth())
+
+          DPSMate_DPSMate_ScrollFrame:SetPoint("TOPLEFT", DPSMate_DPSMate_Head, "BOTTOMLEFT", 0, 0)
+          DPSMate_DPSMate_ScrollFrame:SetPoint("BOTTOMRIGHT", pfUI.chat.right, "BOTTOMRIGHT", 0, pfUI.panel.right:GetHeight())
+          DPSMate_DPSMate_Resize:Hide()
+        end
       end
     end
 
-    pfUI.panel.right.hide:SetScript("OnClick", function()
-      if DPSMate_DPSMate:IsShown() then
-        DPSMate_DPSMate:Hide()
-      else
-        DPSMate_DPSMate:Show()
-      end
-    end)
+    if pfUI.panel then
+      pfUI.panel.right.hide:SetScript("OnClick", function()
+        if DPSMate_DPSMate:IsShown() then
+          DPSMate_DPSMate:Hide()
+        else
+          DPSMate_DPSMate:Show()
+        end
+      end)
+    end
+  end
 
+  if pfUI_config.thirdparty.dpsmate.enable == "1" then
+    if DPSMate_DPSMate then
+      pfSetupDPSMate()
+    else
+      local pfHookDPSMate = CreateFrame("Frame", nil)
+      pfHookDPSMate:RegisterEvent("VARIABLES_LOADED")
+      pfHookDPSMate:SetScript("OnEvent",function()
+          if DPSMate_DPSMate then
+            pfHookDPSMate:UnregisterEvent("VARIABLES_LOADED")
+            pfSetupDPSMate()
+          end
+        end)
+    end
   end
 
   -- WIM Integration
@@ -184,6 +202,7 @@ pfUI:RegisterModule("thirdparty", function ()
           local id = nil
 
           for i=1,40 do
+            if not pfUI.uf.raid then break end
             if pfUI.uf.raid[i] and pfUI.uf.raid[i].id == rid then id = i end
           end
 
@@ -297,7 +316,7 @@ pfUI:RegisterModule("thirdparty", function ()
         pfUI.bag.right.sort:SetHeight(12)
         pfUI.bag.right.sort:SetWidth(12)
         pfUI.bag.right.sort:SetTextColor(1,1,.25,1)
-        pfUI.bag.right.sort:SetFont("Interface\\AddOns\\pfUI\\fonts\\" .. pfUI_config.global.font_default .. ".ttf", pfUI_config.global.font_size, "OUTLINE")
+        pfUI.bag.right.sort:SetFont(pfUI.font_default, pfUI_config.global.font_size, "OUTLINE")
         pfUI.bag.right.sort.texture = pfUI.bag.right.sort:CreateTexture("pfBagArrowUp")
         pfUI.bag.right.sort.texture:SetTexture("Interface\\AddOns\\pfUI\\img\\sort")
         pfUI.bag.right.sort.texture:ClearAllPoints()
@@ -335,7 +354,7 @@ pfUI:RegisterModule("thirdparty", function ()
         pfUI.bag.left.sort:SetHeight(12)
         pfUI.bag.left.sort:SetWidth(12)
         pfUI.bag.left.sort:SetTextColor(1,1,.25,1)
-        pfUI.bag.left.sort:SetFont("Interface\\AddOns\\pfUI\\fonts\\" .. pfUI_config.global.font_default .. ".ttf", pfUI_config.global.font_size, "OUTLINE")
+        pfUI.bag.left.sort:SetFont(pfUI.font_default, pfUI_config.global.font_size, "OUTLINE")
         pfUI.bag.left.sort.texture = pfUI.bag.left.sort:CreateTexture("pfBagArrowUp")
         pfUI.bag.left.sort.texture:SetTexture("Interface\\AddOns\\pfUI\\img\\sort")
         pfUI.bag.left.sort.texture:ClearAllPoints()

@@ -18,13 +18,12 @@ pfUI:RegisterModule("minimap", function ()
   pfUI.utils:CreateBackdrop(pfUI.minimap)
   pfUI.minimap:SetPoint("TOPRIGHT", UIParent, -5, -5)
   pfUI.utils:UpdateMovable(pfUI.minimap)
-  pfUI.minimap:SetWidth(Minimap:GetWidth())
-  pfUI.minimap:SetHeight(Minimap:GetHeight())
+  pfUI.minimap:SetWidth(140)
+  pfUI.minimap:SetHeight(140)
   pfUI.minimap:SetFrameStrata("BACKGROUND")
 
   Minimap:SetParent(pfUI.minimap)
-  Minimap:ClearAllPoints()
-  Minimap:SetAllPoints(pfUI.minimap)
+  Minimap:SetPoint("CENTER", pfUI.minimap, "CENTER", 0.5, -.5)
 
   -- Set new mail frame position to top right corner of the minimap
   -- mostly taken from TukUI
@@ -33,8 +32,39 @@ pfUI:RegisterModule("minimap", function ()
   MiniMapMailBorder:Hide()
   MiniMapMailIcon:SetTexture("Interface\\AddOns\\pfUI\\img\\mail")
 
-  MiniMapTrackingFrame:SetFrameStrata("LOW")
+  MiniMapMailFrame:SetScript("OnShow", function()
+    if not this.highlight then
+      this.highlight = CreateFrame("Frame", nil, this)
+      this.highlight:SetAllPoints(this)
+      this.highlight:SetFrameLevel(this:GetFrameLevel() + 1)
 
+      this.highlight.tex = this.highlight:CreateTexture("OVERLAY")
+      this.highlight.tex:SetTexture("Interface\\AddOns\\pfUI\\img\\mail")
+      this.highlight.tex:SetPoint("TOPLEFT", MiniMapMailIcon, "TOPLEFT", -2, 2)
+      this.highlight.tex:SetPoint("BOTTOMRIGHT", MiniMapMailIcon, "BOTTOMRIGHT", 2, -2)
+      this.highlight.tex:SetVertexColor(1,.5,.5)
+
+      this.highlight:SetScript("OnUpdate", function()
+        if not this.count then this.count = 0 end
+        if not this.modifier then this.modifier = 1 end
+        if this.count >= 10 then this:Hide() end
+
+        this:SetAlpha(this:GetAlpha() + this.modifier)
+
+        if this:GetAlpha() <= 0.1 then
+          this.modifier = 0.05
+          this.count = this.count + 1
+        elseif this:GetAlpha() >= 0.9 then
+          this.modifier = -0.05
+        end
+      end)
+    end
+
+    this.highlight.count = 0
+    this.highlight:Show()
+  end)
+
+  MiniMapTrackingFrame:SetFrameStrata("LOW")
 
   -- Coordinates in minimap
   -- Create location text frame in bottom left corner of minimap
@@ -45,7 +75,7 @@ pfUI:RegisterModule("minimap", function ()
   pfUI.minimapCoordinates:SetFrameStrata("BACKGROUND")
   -- Create text
   pfUI.minimapCoordinates.text = pfUI.minimapCoordinates:CreateFontString("MinimapCoordinatesText", "LOW", "GameFontNormal")
-  pfUI.minimapCoordinates.text:SetFont("Interface\\AddOns\\pfUI\\fonts\\" .. pfUI_config.global.font_default .. ".ttf", pfUI_config.global.font_size, "OUTLINE")
+  pfUI.minimapCoordinates.text:SetFont(pfUI.font_default, pfUI_config.global.font_size, "OUTLINE")
   pfUI.minimapCoordinates.text:SetPoint("LEFT", 4, 0)
   pfUI.minimapCoordinates.text:SetFontObject(GameFontWhite)
   pfUI.minimapCoordinates.text:SetText("X, Y")
@@ -56,9 +86,14 @@ pfUI:RegisterModule("minimap", function ()
   Minimap:SetScript("OnEnter", function()
     SetMapToCurrentZone()
     local posX, posY = GetPlayerMapPosition("player")
-    local roundedX = ceil(posX * 1000)/10
-    local roundedY = ceil(posY * 1000)/10
-    pfUI.minimapCoordinates.text:SetText(roundedX..", "..roundedY)
+    if posX ~= 0 and posY ~= 0 then
+      local roundedX = ceil(posX * 1000)/10
+      local roundedY = ceil(posY * 1000)/10
+      pfUI.minimapCoordinates.text:SetText(roundedX..", "..roundedY)
+    else
+      pfUI.minimapCoordinates.text:SetText("|cffffaaaaN/A")
+    end
+
     pfUI.minimapCoordinates:Show()
   end)
   Minimap:SetScript("OnLeave", function()

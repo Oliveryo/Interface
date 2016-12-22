@@ -35,7 +35,7 @@ pfUI will support and contain language specific code for the following languages
 ![Moving Frames](http://mephis.he-hosting.de/shaguaddons/pfUI/mmobase/moveit.jpg)
 
 ## Recommended Addons
-* [DPSMate](https://bitbucket.org/tomdy/dpsmate) An advanced combat analyzation tool
+* [DPSMate](https://github.com/Geigerkind/DPSMate) An advanced combat analyzation tool
 * [HealComm](https://github.com/Aviana/HealComm/releases) Visual representation of incoming heals
 * [WIM](http://addons.us.to/addon/wim), [WIM (continued)](https://github.com/shirsig/WIM) Give whispers an instant messenger feel
 * [MobHealth3](http://addons.us.to/addon/mobhealth) Estimates a mob's health
@@ -55,6 +55,9 @@ pfUI will support and contain language specific code for the following languages
 The term "*pfui!*" is german and simply stands for "*pooh!*", because I'm not a 
 big fan of creating configuration UI's especially not via the Wow-API 
 (you might have noticed that in ShaguUI). 
+
+**How can I enable mouseover cast?**  
+Create a macro with "/pfcast SPELLNAME". 
 
 **How can I checkout the current state?**  
 See Installation Section. But be aware that things might not work for you.

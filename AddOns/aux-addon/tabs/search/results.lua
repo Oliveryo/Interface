@@ -321,8 +321,6 @@ function M.execute(resume, real_time)
 		end
 	end
 
-	clear_control_focus()
-
 	if resume then
 		current_search.table:SetSelectedRecord()
 	else
@@ -335,6 +333,7 @@ function M.execute(resume, real_time)
 			new_recent_search(filter_string, join(map(copy(queries), function(filter) return filter.prettified end), ';'))
 		else
 			current_search.records = T
+			current_search.table:Reset()
 			current_search.table:SetDatabase(current_search.records)
 		end
 		current_search.first_page = first_page
@@ -347,7 +346,7 @@ function M.execute(resume, real_time)
 	discard_continuation()
 	current_search.active = true
 	update_start_stop()
-
+	clear_control_focus()
 	subtab = RESULTS
 	if real_time then
 		start_real_time_scan(queries[1], nil, continuation)

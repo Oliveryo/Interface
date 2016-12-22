@@ -120,4 +120,11 @@ if (GetLocale() == "deDE") then
 	MPOWA_ZONES_AQ402 = "Tempel von Ahn'Qiraj"
 	MPOWA_ZONES_AQ20 = "Ruinen von Ahn'Qiraj"
 	MPOWA_ZONES_NAXX = "Naxxramas"
+
+	MPOWA_CHECKBUTTON_HIDE_STACKS_TOOLTIP = "Kreuze das an, um die Anzahl zu verstecken"
+	MPOWA_CHECKBUTTON_HIDE_STACKS = "Verstecke Anzahl"
+	MPOWA_CHECKBUTTON_USE_DESCRIPTION_TOOLTIP = "Kreuze das an, um die Beschreibung der Aura im Tooltip als zweiten Indikator für die Erkennung zu verwenden."
+	MPOWA_CHECKBUTTON_USE_DESCRIPTION = "Nutze Beschreibung"
+	MPOWA_EDITBOX_SecondSpecifier_TOOLTIP = "Schreibe hier die genaue Beschreibung der aura hinein."
+	MPOWA_EDITBOX_SecondSpecifier = "Exakte Beschreibung:"
 end

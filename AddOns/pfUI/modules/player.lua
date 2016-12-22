@@ -11,11 +11,24 @@ pfUI:RegisterModule("player", function ()
   PlayerFrame:UnregisterAllEvents()
 
   pfUI.uf.player = CreateFrame("Button","pfPlayer",UIParent)
+  pfUI.uf.player.label = "player"
+  pfUI.uf.player.id = ""
+  pfUI.uf.player:SetFrameStrata("LOW")
   pfUI.uf.player:SetWidth(pfUI_config.unitframes.player.width)
   pfUI.uf.player:SetHeight(pfUI_config.unitframes.player.height + pfUI_config.unitframes.player.pheight + 2*default_border + pfUI_config.unitframes.player.pspace)
   pfUI.uf.player:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOM", -75, 125)
   pfUI.utils:UpdateMovable(pfUI.uf.player)
   pfUI.uf.player:RegisterForClicks('LeftButtonUp', 'RightButtonUp')
+  pfUI.uf.player:SetScript("OnEnter", function()
+    GameTooltip_SetDefaultAnchor(GameTooltip, this)
+    GameTooltip:SetUnit(this.label .. this.id)
+    GameTooltip:Show()
+  end)
+
+  pfUI.uf.player:SetScript("OnLeave", function()
+    GameTooltip:FadeOut()
+  end)
+
   pfUI.uf.player:SetScript("OnClick", function ()
       if arg1 == "RightButton" then
         ToggleDropDownMenu(1, nil, pfUI.uf.player.Dropdown,"cursor")
@@ -24,6 +37,45 @@ pfUI:RegisterModule("player", function ()
         end
       else
         TargetUnit("player")
+
+        if pfUI_config.unitframes.globalclick == "0" then return end
+
+        -- clickcast: shift modifier
+        if IsShiftKeyDown() then
+          if pfUI_config.unitframes.raid.clickcast_shift ~= "" then
+            CastSpellByName(pfUI_config.unitframes.raid.clickcast_shift)
+            pfUI.uf.target.noanim = "yes"
+            TargetLastTarget()
+            return
+          end
+        -- clickcast: alt modifier
+        elseif IsAltKeyDown() then
+          if pfUI_config.unitframes.raid.clickcast_alt ~= "" then
+            CastSpellByName(pfUI_config.unitframes.raid.clickcast_alt)
+            pfUI.uf.target.noanim = "yes"
+            TargetLastTarget()
+            return
+          end
+        -- clickcast: ctrl modifier
+        elseif IsControlKeyDown() then
+          if pfUI_config.unitframes.raid.clickcast_ctrl ~= "" then
+            CastSpellByName(pfUI_config.unitframes.raid.clickcast_ctrl)
+            pfUI.uf.target.noanim = "yes"
+            TargetLastTarget()
+            return
+          end
+        -- clickcast: default
+        else
+          if pfUI_config.unitframes.raid.clickcast ~= "" then
+            CastSpellByName(pfUI_config.unitframes.raid.clickcast)
+            pfUI.uf.target.noanim = "yes"
+            TargetLastTarget()
+            return
+          else
+            -- no clickcast: default action
+            TargetUnit("player")
+          end
+        end
       end
     end)
 
@@ -124,7 +176,15 @@ pfUI:RegisterModule("player", function ()
         _, class = UnitClass("player")
         local color = RAID_CLASS_COLORS[class]
 
-        local cr, cg, cb = (color.r + .5) * .5, (color.g + .5) * .5, (color.b + .5) * .5
+        local cr, cg, cb
+        if pfUI_config.unitframes.dark == "1" then
+          cr, cg, cb = .2,.2,.2
+        elseif pfUI_config.unitframes.pastel == "1" then
+          cr, cg, cb = (color.r + .5) * .5, (color.g + .5) * .5, (color.b + .5) * .5
+        else
+          cr, cg, cb = color.r, color.g, color.b
+        end
+
         local perc = hp / hpmax
 
         pfUI.uf.player.hp.bar:SetMinMaxValues(0, hpmax)
@@ -193,28 +253,25 @@ pfUI:RegisterModule("player", function ()
   pfUI.uf.player.hp.bar:SetAllPoints(pfUI.uf.player.hp)
   pfUI.uf.player.hp.bar:SetMinMaxValues(0, 100)
 
-  pfUI.uf.player.hp.leaderIcon = CreateFrame("Frame",nil,pfUI.uf.player.hp)
+  pfUI.uf.player.hp.leaderIcon = CreateFrame("Frame",nil,pfUI.uf.player.hp.bar)
   pfUI.uf.player.hp.leaderIcon:SetWidth(10)
   pfUI.uf.player.hp.leaderIcon:SetHeight(10)
-  pfUI.uf.player.hp.leaderIcon:SetFrameStrata("HIGH")
   pfUI.uf.player.hp.leaderIcon.texture = pfUI.uf.player.hp.leaderIcon:CreateTexture(nil,"BACKGROUND")
   pfUI.uf.player.hp.leaderIcon.texture:SetTexture("Interface\\GROUPFRAME\\UI-Group-LeaderIcon")
   pfUI.uf.player.hp.leaderIcon.texture:SetAllPoints(pfUI.uf.player.hp.leaderIcon)
   pfUI.uf.player.hp.leaderIcon:SetPoint("CENTER", pfUI.uf.player.hp, "TOPLEFT", 0, 0)
   pfUI.uf.player.hp.leaderIcon:Hide()
 
-  pfUI.uf.player.hp.lootIcon = CreateFrame("Frame",nil,pfUI.uf.player.hp)
+  pfUI.uf.player.hp.lootIcon = CreateFrame("Frame",nil,pfUI.uf.player.hp.bar)
   pfUI.uf.player.hp.lootIcon:SetWidth(10)
   pfUI.uf.player.hp.lootIcon:SetHeight(10)
-  pfUI.uf.player.hp.lootIcon:SetFrameStrata("HIGH")
   pfUI.uf.player.hp.lootIcon.texture = pfUI.uf.player.hp.lootIcon:CreateTexture(nil,"BACKGROUND")
   pfUI.uf.player.hp.lootIcon.texture:SetTexture("Interface\\GROUPFRAME\\UI-Group-MasterLooter")
   pfUI.uf.player.hp.lootIcon.texture:SetAllPoints(pfUI.uf.player.hp.lootIcon)
   pfUI.uf.player.hp.lootIcon:SetPoint("CENTER", pfUI.uf.player.hp, "LEFT", 0, 0)
   pfUI.uf.player.hp.lootIcon:Hide()
 
-  pfUI.uf.player.hp.raidIcon = CreateFrame("Frame",nil,pfUI.uf.player.hp)
-  pfUI.uf.player.hp.raidIcon:SetFrameStrata("HIGH")
+  pfUI.uf.player.hp.raidIcon = CreateFrame("Frame",nil,pfUI.uf.player.hp.bar)
   pfUI.uf.player.hp.raidIcon:SetWidth(24)
   pfUI.uf.player.hp.raidIcon:SetHeight(24)
   pfUI.uf.player.hp.raidIcon.texture = pfUI.uf.player.hp.raidIcon:CreateTexture(nil,"ARTWORK")
@@ -250,15 +307,52 @@ pfUI:RegisterModule("player", function ()
   pfUI.uf.player.power.bar:SetAllPoints(pfUI.uf.player.power)
   pfUI.uf.player.power.bar:SetMinMaxValues(0, 100)
 
+  if pfUI_config.unitframes.player.energy == "1" then
+    pfUI.uf.player.power.tick = CreateFrame("Frame", nil, pfUI.uf.player.power.bar)
+    pfUI.uf.player.power.tick:RegisterEvent("PLAYER_ENTERING_WORLD")
+    pfUI.uf.player.power.tick:RegisterEvent("UNIT_DISPLAYPOWER")
+
+    pfUI.uf.player.power.tick:SetScript("OnEvent", function()
+      if event == "PLAYER_ENTERING_WORLD" then this.lastTick = GetTime() end
+      if event == "PLAYER_ENTERING_WORLD" or ( event == "UNIT_DISPLAYPOWER" and arg1 == "player" ) then
+        if UnitPowerType("player") ~= 3 then
+          this.spark:Hide()
+        else
+          this.spark:Show()
+        end
+      end
+    end)
+
+    pfUI.uf.player.power.tick.spark = pfUI.uf.player.power.bar:CreateTexture(nil, 'OVERLAY')
+    pfUI.uf.player.power.tick.spark:SetTexture("Interface\\CastingBar\\UI-CastingBar-Spark")
+    pfUI.uf.player.power.tick.spark:SetHeight(pfUI_config.unitframes.player.pheight + 15)
+    pfUI.uf.player.power.tick.spark:SetWidth(pfUI_config.unitframes.player.pheight + 5)
+    pfUI.uf.player.power.tick.spark:SetBlendMode('ADD')
+
+    pfUI.uf.player.power.tick:SetScript("OnUpdate", function()
+      if not this.energy then this.energy = UnitMana("player") end
+
+      if(UnitMana("player") > this.energy or GetTime() >= this.lastTick + 2) then
+        this.lastTick = GetTime()
+      end
+
+      this.energy = UnitMana("player")
+
+      local value = round((GetTime() - this.lastTick) * 100)
+      local pos = pfUI_config.unitframes.player.width / 200 * value
+      this.spark:SetPoint("LEFT", pos-((pfUI_config.unitframes.player.pheight+5)/2), 0)
+    end)
+  end
+
   pfUI.uf.player.hpText = pfUI.uf.player:CreateFontString("Status", "HIGH", "GameFontNormal")
-  pfUI.uf.player.hpText:SetFont("Interface\\AddOns\\pfUI\\fonts\\" .. pfUI_config.global.font_square .. ".ttf", pfUI_config.global.font_size, "OUTLINE")
+  pfUI.uf.player.hpText:SetFont(pfUI.font_square, pfUI_config.global.font_size, "OUTLINE")
   pfUI.uf.player.hpText:ClearAllPoints()
   pfUI.uf.player.hpText:SetJustifyH("RIGHT")
   pfUI.uf.player.hpText:SetFontObject(GameFontWhite)
   pfUI.uf.player.hpText:SetText("5000")
 
   pfUI.uf.player.powerText = pfUI.uf.player:CreateFontString("Status", "HIGH", "GameFontNormal")
-  pfUI.uf.player.powerText:SetFont("Interface\\AddOns\\pfUI\\fonts\\" .. pfUI_config.global.font_square .. ".ttf", pfUI_config.global.font_size, "OUTLINE")
+  pfUI.uf.player.powerText:SetFont(pfUI.font_square, pfUI_config.global.font_size, "OUTLINE")
   pfUI.uf.player.powerText:ClearAllPoints()
   pfUI.uf.player.powerText:SetJustifyH("LEFT")
   pfUI.uf.player.powerText:SetFontObject(GameFontWhite)
@@ -285,14 +379,14 @@ pfUI:RegisterModule("player", function ()
     pfUI.uf.player.buff.buffs[i]:SetID(i)
 
     pfUI.uf.player.buff.buffs[i].stacks = pfUI.uf.player.buff.buffs[i]:CreateFontString(nil, "OVERLAY", pfUI.uf.player.buff.buffs[i])
-    pfUI.uf.player.buff.buffs[i].stacks:SetFont("Interface\\AddOns\\pfUI\\fonts\\" .. pfUI_config.global.font_square .. ".ttf", pfUI_config.global.font_size, "OUTLINE")
+    pfUI.uf.player.buff.buffs[i].stacks:SetFont(pfUI.font_square, pfUI_config.global.font_size, "OUTLINE")
     pfUI.uf.player.buff.buffs[i].stacks:SetPoint("BOTTOMRIGHT", pfUI.uf.player.buff.buffs[i], 2, -2)
     pfUI.uf.player.buff.buffs[i].stacks:SetJustifyH("LEFT")
     pfUI.uf.player.buff.buffs[i].stacks:SetShadowColor(0, 0, 0)
     pfUI.uf.player.buff.buffs[i].stacks:SetShadowOffset(0.8, -0.8)
     pfUI.uf.player.buff.buffs[i].stacks:SetTextColor(1,1,.5)
     pfUI.uf.player.buff.buffs[i].cd = pfUI.uf.player.buff.buffs[i]:CreateFontString(nil, "OVERLAY", pfUI.uf.player.buff.buffs[i])
-    pfUI.uf.player.buff.buffs[i].cd:SetFont("Interface\\AddOns\\pfUI\\fonts\\" .. pfUI_config.global.font_square .. ".ttf", pfUI_config.global.font_size, "OUTLINE")
+    pfUI.uf.player.buff.buffs[i].cd:SetFont(pfUI.font_square, pfUI_config.global.font_size, "OUTLINE")
     pfUI.uf.player.buff.buffs[i].cd:SetPoint("CENTER", pfUI.uf.player.buff.buffs[i], 0, 0)
     pfUI.uf.player.buff.buffs[i].cd:SetJustifyH("LEFT")
     pfUI.uf.player.buff.buffs[i].cd:SetShadowColor(0, 0, 0)
@@ -301,9 +395,30 @@ pfUI:RegisterModule("player", function ()
 
     pfUI.uf.player.buff.buffs[i]:RegisterForClicks("RightButtonUp")
     pfUI.uf.player.buff.buffs[i]:ClearAllPoints()
-    pfUI.uf.player.buff.buffs[i]:SetPoint("BOTTOMLEFT", pfUI.uf.player, "TOPLEFT",
+
+    local invert, af, as
+    if pfUI_config.unitframes.player.buffs == "top" then
+      invert = 1
+      af = "BOTTOMLEFT"
+      as = "TOPLEFT"
+    elseif pfUI_config.unitframes.player.buffs == "bottom" then
+      invert = -1
+      af = "TOPLEFT"
+      as = "BOTTOMLEFT"
+    else
+      -- set fallback values
+      invert = 1
+      af = "BOTTOMLEFT"
+      as = "TOPLEFT"
+
+      -- disable bufs
+      pfUI.uf.player.buff.buffs[i]:Hide()
+      pfUI.uf.player.buff:UnregisterAllEvents()
+    end
+
+    pfUI.uf.player.buff.buffs[i]:SetPoint(af, pfUI.uf.player, as,
     (i-1-8*row)*((2*default_border) + pfUI_config.unitframes.buff_size + 1),
-    (row)*((2*default_border) + pfUI_config.unitframes.buff_size + 1) + 2*default_border + 1)
+    invert * (row)*((2*default_border) + pfUI_config.unitframes.buff_size + 1) + invert*(2*default_border + 1))
     pfUI.uf.player.buff.buffs[i]:SetWidth(pfUI_config.unitframes.buff_size)
     pfUI.uf.player.buff.buffs[i]:SetHeight(pfUI_config.unitframes.buff_size)
     pfUI.uf.player.buff.buffs[i]:SetScript("OnEnter", function()
@@ -375,14 +490,14 @@ pfUI:RegisterModule("player", function ()
     pfUI.uf.player.debuff.debuffs[i] = CreateFrame("Button", "pfUIPlayerDebuff" .. i, pfUI.uf.player)
     pfUI.uf.player.debuff.debuffs[i]:SetID(i)
     pfUI.uf.player.debuff.debuffs[i].stacks = pfUI.uf.player.debuff.debuffs[i]:CreateFontString(nil, "OVERLAY", pfUI.uf.player.debuff.debuffs[i])
-    pfUI.uf.player.debuff.debuffs[i].stacks:SetFont("Interface\\AddOns\\pfUI\\fonts\\" .. pfUI_config.global.font_square .. ".ttf", pfUI_config.global.font_size, "OUTLINE")
+    pfUI.uf.player.debuff.debuffs[i].stacks:SetFont(pfUI.font_square, pfUI_config.global.font_size, "OUTLINE")
     pfUI.uf.player.debuff.debuffs[i].stacks:SetPoint("BOTTOMRIGHT", pfUI.uf.player.debuff.debuffs[i], 2, -2)
     pfUI.uf.player.debuff.debuffs[i].stacks:SetJustifyH("LEFT")
     pfUI.uf.player.debuff.debuffs[i].stacks:SetShadowColor(0, 0, 0)
     pfUI.uf.player.debuff.debuffs[i].stacks:SetShadowOffset(0.8, -0.8)
     pfUI.uf.player.debuff.debuffs[i].stacks:SetTextColor(1,1,.5)
     pfUI.uf.player.debuff.debuffs[i].cd = pfUI.uf.player.debuff.debuffs[i]:CreateFontString(nil, "OVERLAY", pfUI.uf.player.debuff.debuffs[i])
-    pfUI.uf.player.debuff.debuffs[i].cd:SetFont("Interface\\AddOns\\pfUI\\fonts\\" .. pfUI_config.global.font_square .. ".ttf", pfUI_config.global.font_size, "OUTLINE")
+    pfUI.uf.player.debuff.debuffs[i].cd:SetFont(pfUI.font_square, pfUI_config.global.font_size, "OUTLINE")
     pfUI.uf.player.debuff.debuffs[i].cd:SetPoint("CENTER", pfUI.uf.player.debuff.debuffs[i], 0, 0)
     pfUI.uf.player.debuff.debuffs[i].cd:SetJustifyH("LEFT")
     pfUI.uf.player.debuff.debuffs[i].cd:SetShadowColor(0, 0, 0)
@@ -408,22 +523,23 @@ pfUI:RegisterModule("player", function ()
     end)
 
     pfUI.uf.player.debuff.debuffs[i]:SetScript("OnUpdate", function()
-      local timeleft = GetPlayerBuffTimeLeft(GetPlayerBuff(this:GetID()-1,"HARMFUL"))
+      local timeleft = GetPlayerBuffTimeLeft(this:GetID()-1,"HARMFUL")
+
       if timeleft ~= nil and timeleft ~= 0 then
         -- if there are more than 0 seconds left
         if timeleft < 60 then
           -- show seconds if less than 60 seconds
-          pfUI.uf.player.debuff.debuffs[i].cd:SetText(ceil(timeleft))
+          pfUI.uf.player.debuff.debuffs[this:GetID()].cd:SetText(ceil(timeleft))
         elseif timeleft < 3600 then
           -- show minutes if less than 3600 seconds (1 hour)
-          pfUI.uf.player.debuff.debuffs[i].cd:SetText(ceil(timeleft/60)..'m')
+          pfUI.uf.player.debuff.debuffs[this:GetID()].cd:SetText(ceil(timeleft/60)..'m')
         else
           -- otherwise show hours
-          pfUI.uf.player.buff.buffs[i].cd:SetText(ceil(timeleft/3600) .. 'h')
+          pfUI.uf.player.debuff.debuffs[this:GetID()].cd:SetText(ceil(timeleft/3600) .. 'h')
         end
       else
         -- if there's no time left or not set, empty buff text
-        pfUI.uf.player.buff.buffs[i].cd:SetText("")
+        pfUI.uf.player.debuff.debuffs[this:GetID()].cd:SetText("")
       end
     end)
 
@@ -438,15 +554,35 @@ pfUI:RegisterModule("player", function ()
       if pfUI.uf.player.buff.buffs[9]:IsShown() then top = top + 1 end
 
 
-      pfUI.uf.player.debuff.debuffs[i]:SetPoint("BOTTOMLEFT", pfUI.uf.player, "TOPLEFT",
+      local invert, af, as
+      if pfUI_config.unitframes.player.buffs == "top" then
+        invert = 1
+        af = "BOTTOMLEFT"
+        as = "TOPLEFT"
+      elseif pfUI_config.unitframes.player.buffs == "bottom" then
+        invert = -1
+        af = "TOPLEFT"
+        as = "BOTTOMLEFT"
+      else
+        -- set fallback values
+        invert = 1
+        af = "BOTTOMLEFT"
+        as = "TOPLEFT"
+
+        -- disable bufs
+        pfUI.uf.player.debuff.debuffs[i]:Hide()
+        pfUI.uf.player.debuff:UnregisterAllEvents()
+      end
+
+      pfUI.uf.player.debuff.debuffs[i]:SetPoint(af, pfUI.uf.player, as,
       (i-1-8*row)*((2*default_border) + pfUI_config.unitframes.debuff_size + 1),
-      (top)*((2*default_border) + pfUI_config.unitframes.buff_size + 1) +
-      (row)*((2*default_border) + pfUI_config.unitframes.debuff_size + 1) + (2*default_border + 1))
+      invert * (top)*((2*default_border) + pfUI_config.unitframes.buff_size + 1) +
+      invert * (row)*((2*default_border) + pfUI_config.unitframes.debuff_size + 1) + invert*(2*default_border + 1))
 
 
       local stacks = GetPlayerBuffApplications(GetPlayerBuff(i-1,"HARMFUL"))
       pfUI.utils:CreateBackdrop(pfUI.uf.player.debuff.debuffs[i], default_border)
-      pfUI.uf.player.debuff.debuffs[i]:SetNormalTexture(GetPlayerBuffTexture(GetPlayerBuff(i-1,"HARMFUL")))
+      pfUI.uf.player.debuff.debuffs[i]:SetNormalTexture(UnitDebuff("player", i))
       for i,v in ipairs({pfUI.uf.player.debuff.debuffs[i]:GetRegions()}) do
         if v.SetTexCoord then v:SetTexCoord(.08, .92, .08, .92) end
       end

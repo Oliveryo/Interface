@@ -11,8 +11,6 @@ local post = require 'aux.core.post'
 local scan = require 'aux.core.scan'
 
 _G.aux_characters = T
---aux_account_settings = {} -- TODO clean up the mess of savedvariables
---aux_character_settings = {}
 
 function M.set_p(v)
 	inspect(nil, v)
@@ -20,7 +18,7 @@ end
 
 function M.print(...)
 	temp(arg)
-	DEFAULT_CHAT_FRAME:AddMessage(LIGHTYELLOW_FONT_COLOR_CODE .. '[aux] ' .. join(map(arg, tostring), ' '))
+	DEFAULT_CHAT_FRAME:AddMessage(LIGHTYELLOW_FONT_COLOR_CODE .. '<aux> ' .. join(map(arg, tostring), ' '))
 end
 
 local bids_loaded
@@ -51,6 +49,7 @@ do
 			for _, f in handlers do f() end
 		elseif event == 'PLAYER_LOGIN' then
 			for _, f in handlers2 do f() end
+			print('loaded - /aux')
 		else
 			_M[event]()
 		end
@@ -72,6 +71,7 @@ do
 	local index
 	function get_active_tab() return tab_info[index] end
 	function on_tab_click(i)
+		CloseDropDownMenus()
 		do (index and active_tab.CLOSE or nop)() end
 		index = i
 		do (index and active_tab.OPEN or nop)() end

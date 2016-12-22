@@ -81,7 +81,7 @@ function DPSMate.Modules.HPS:GetSettingValues(arr, cbt, k,ecbt)
 		if DPSMateSettings["columnshps"][3] then str[2] = " ("..strformat("%.1f", 100*varea/totr).."%)" end
 		if DPSMateSettings["columnshps"][1] then str[3] = "("..DPSMate:Commas(va, k)..p..")"; strt[1] = "("..DPSMate:Commas(tot, k)..p..")" end
 		if DPSMateSettings["columnshps"][4] then str[4] = " ("..strformat("%.1f", va/(ecbt[pname] or cbt))..p..")" end
-		tinsert(name, pname)
+		tinsert(name, pname) 
 		tinsert(value, str[3]..str[1]..str[4]..str[2])
 		tinsert(perc, 100*(varea/sortr))
 	end

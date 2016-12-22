@@ -12,7 +12,7 @@ do local frame = CreateFrame('Frame')
 	frame:RegisterEvent('ADDON_LOADED')
 end
 
-_G.cooldowns_settings = T
+_G.cooldowns_settings = {used=true}
 
 function M.print(msg)
 	DEFAULT_CHAT_FRAME:AddMessage(LIGHTYELLOW_FONT_COLOR_CODE .. '[cooldowns] ' .. msg)
@@ -123,7 +123,7 @@ function SLASH(str)
 			end
 			frame.settings.ignore_list = list(unpack(names))
 		elseif parameters[1] == 'IGNORE' then
-			print(frame.key .. ':')
+			print(frame.title .. ':')
 			for _, name in temp-elems(frame.settings.ignore_list) do print(name) end
 		elseif parameters[1] == 'RESET' then
 			wipe(frame.settings)

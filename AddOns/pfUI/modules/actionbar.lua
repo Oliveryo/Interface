@@ -26,6 +26,31 @@ pfUI:RegisterModule("actionbar", function ()
     Hook_HideBonusActionBar()
   end
 
+  if pfUI_config.bars.glowrange == "1" then
+    if not Hook_ActionButton_OnUpdate then
+      Hook_ActionButton_OnUpdate = ActionButton_OnUpdate
+    end
+
+    function ActionButton_OnUpdate(elapsed)
+      -- Handle range indicator
+      if ( this.rangeTimer ) then
+        this.rangeTimer = this.rangeTimer - elapsed
+        if ( this.rangeTimer <= 0.1 ) then
+          if ( IsActionInRange( ActionButton_GetPagedID(this)) == 0 ) then
+            if not this.a then
+              this.r,this.g,this.b,this.a = strsplit(",", pfUI_config.bars.rangecolor)
+            end
+            getglobal(this:GetName() .. 'Icon'):SetVertexColor(this.r, this.g, this.b, this.a)
+          elseif IsUsableAction(ActionButton_GetPagedID(this)) then
+            getglobal(this:GetName() .. 'Icon'):SetVertexColor(1, 1, 1, 1)
+          end
+          this.rangeTimer = TOOLTIP_UPDATE_TIME
+        end
+      end
+      Hook_ActionButton_OnUpdate(elapsed)
+    end
+  end
+
   function ActionButton_GetPagedID(button)
     if ( button.isBonus and CURRENT_ACTIONBAR_PAGE == 1 ) then
       local offset = GetBonusBarOffset()
@@ -400,11 +425,11 @@ pfUI:RegisterModule("actionbar", function ()
       getglobal(button..i..'NormalTexture'):SetTexCoord(.08, .92, .08, .92)
       getglobal(button..i..'Border'):SetTexture(0,0,0,0)
       getglobal(button..i..'HotKey'):SetAllPoints(getglobal(button..i))
-      getglobal(button..i..'HotKey'):SetFont("Interface\\AddOns\\pfUI\\fonts\\" .. pfUI_config.global.font_square .. ".ttf", pfUI_config.global.font_size -2, "OUTLINE")
+      getglobal(button..i..'HotKey'):SetFont(pfUI.font_square, pfUI_config.global.font_size -2, "OUTLINE")
       getglobal(button..i..'HotKey'):SetJustifyH("RIGHT")
       getglobal(button..i..'HotKey'):SetJustifyV("TOP")
       getglobal(button..i..'Name'):SetAllPoints(getglobal(button..i))
-      getglobal(button..i..'Name'):SetFont("Interface\\AddOns\\pfUI\\fonts\\" .. pfUI_config.global.font_square .. ".ttf", pfUI_config.global.font_size -2, "OUTLINE")
+      getglobal(button..i..'Name'):SetFont(pfUI.font_square, pfUI_config.global.font_size -2, "OUTLINE")
       getglobal(button..i..'Name'):SetJustifyH("CENTER")
       getglobal(button..i..'Name'):SetJustifyV("BOTTOM")
     end
@@ -415,8 +440,12 @@ pfUI:RegisterModule("actionbar", function ()
     frame.hover:SetParent(frame)
     frame.hover:SetPoint("TOPLEFT", frame, "TOPLEFT", -5, 5)
     frame.hover:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", 5, -5)
-
     frame.hover:SetFrameStrata("BACKGROUND")
+
+    frame.hover:RegisterEvent("CVAR_UPDATE")
+    frame.hover:SetScript("OnEvent", function()
+      this.x = nil
+    end)
 
     frame.hover:SetScript("OnUpdate", function()
       -- reset frame positions to UIParent
@@ -436,10 +465,10 @@ pfUI:RegisterModule("actionbar", function ()
         local fymax = fy-this:GetHeight()
 
         this.x = fx
-        this.xmax = fxmax
+        this.xmax = floor(fxmax)
 
         this.y = fy
-        this.ymax = fymax
+        this.ymax = floor(fymax)
       end
 
       -- get cursor position

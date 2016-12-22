@@ -20,23 +20,26 @@ env\locales_ruRU.lua
 env\colors.lua
 env\functions.lua
 env\fonts.lua
-env\hacks.lua
+env\selldata.lua
 
 # modules
 modules\config.lua
 modules\gui.lua
+modules\pixelperfect.lua
 modules\actionbar.lua
 modules\chat.lua
 modules\font.lua
 modules\addons.lua
 modules\minimap.lua
 modules\panel.lua
+modules\unitframes.lua
 modules\player.lua
 modules\target.lua
 modules\targettarget.lua
 modules\pet.lua
 modules\group.lua
 modules\raid.lua
+modules\mouseover.lua
 modules\castbar.lua
 modules\skin.lua
 modules\xpbar.lua
@@ -49,3 +52,6 @@ modules\thirdparty.lua
 modules\buff.lua
 modules\nameplates.lua
 modules\loot.lua
+modules\infight.lua
+modules\sellvalue.lua
+modules\eqcompare.lua

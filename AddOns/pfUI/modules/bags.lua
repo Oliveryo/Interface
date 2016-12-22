@@ -168,15 +168,25 @@ pfUI:RegisterModule("bags", function ()
 
     if object == "bank" then
       if not pfUI.bag.left then pfUI.bag.left = CreateFrame("Frame", "pfBank", nil) end
-      pfUI.bag.left:SetPoint("BOTTOMLEFT", pfUI.chat.left, "BOTTOMLEFT", 0, 0)
-      pfUI.bag.left:SetPoint("BOTTOMRIGHT", pfUI.chat.left, "BOTTOMRIGHT", 0, 0)
+      if pfUI.chat then
+        pfUI.bag.left:SetPoint("BOTTOMLEFT", pfUI.chat.left, "BOTTOMLEFT", 0, 0)
+        pfUI.bag.left:SetPoint("BOTTOMRIGHT", pfUI.chat.left, "BOTTOMRIGHT", 0, 0)
+      else
+        pfUI.bag.left:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", 5, 5)
+        pfUI.bag.left:SetWidth(pfUI_config.chat.left.width)
+      end
       pfUI.bag.left:EnableMouse(1)
       iterate = pfUI.BANK
       frame = pfUI.bag.left
     else
       if not pfUI.bag.right then pfUI.bag.right = CreateFrame("Frame", "pfBag", nil) end
-      pfUI.bag.right:SetPoint("BOTTOMLEFT", pfUI.chat.right, "BOTTOMLEFT", 0, 0)
-      pfUI.bag.right:SetPoint("BOTTOMRIGHT", pfUI.chat.right, "BOTTOMRIGHT", 0, 0)
+      if pfUI.chat then
+        pfUI.bag.right:SetPoint("BOTTOMLEFT", pfUI.chat.right, "BOTTOMLEFT", 0, 0)
+        pfUI.bag.right:SetPoint("BOTTOMRIGHT", pfUI.chat.right, "BOTTOMRIGHT", 0, 0)
+      else
+        pfUI.bag.right:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOMRIGHT", -5, 5)
+        pfUI.bag.right:SetWidth(pfUI_config.chat.right.width)
+      end
       pfUI.bag.right:EnableMouse(1)
       iterate = pfUI.BACKPACK
       frame = pfUI.bag.right
@@ -220,7 +230,8 @@ pfUI:RegisterModule("bags", function ()
     end
 
     if x > 0 then y = y + 1 end
-    frame:SetHeight( default_border*2 + y*(pfUI.bag.button_size+default_border*3) + topspace + pfUI.panel.right:GetHeight())
+    if pfUI.panel then topspace = topspace + pfUI.panel.right:GetHeight() end
+    frame:SetHeight( default_border*2 + y*(pfUI.bag.button_size+default_border*3) + topspace)
 
     frame:SetScript("OnShow", function() pfUI.bag:CreateBags(object) end)
     frame:SetScript("OnHide", function() pfUI.bag:CreateBags(object) end)
@@ -267,7 +278,7 @@ pfUI:RegisterModule("bags", function ()
     end
 
     local count = getglobal(pfUI.bags[bag].slots[slot].frame:GetName() .. "Count")
-    count:SetFont("Interface\\AddOns\\pfUI\\fonts\\" .. pfUI_config.global.font_square .. ".ttf", pfUI_config.global.font_size, "OUTLINE")
+    count:SetFont(pfUI.font_square, pfUI_config.global.font_size, "OUTLINE")
     count:SetAllPoints()
     count:SetJustifyH("RIGHT")
     count:SetJustifyV("BOTTOM")
@@ -410,7 +421,7 @@ pfUI:RegisterModule("bags", function ()
         frame.bagslots.buy:SetWidth(pfUI.bag.button_size/5*4)
         frame.bagslots.buy:SetText("+")
         frame.bagslots.buy:SetTextColor(.5,.5,1,1)
-        frame.bagslots.buy:SetFont("Interface\\AddOns\\pfUI\\fonts\\" .. pfUI_config.global.font_default .. ".ttf", pfUI_config.global.font_size, "OUTLINE")
+        frame.bagslots.buy:SetFont(pfUI.font_default, pfUI_config.global.font_size, "OUTLINE")
         frame.bagslots.buy:SetScript("OnEnter", function ()
           frame.bagslots.buy:SetTextColor(1,1,1,1)
         end)
@@ -465,7 +476,7 @@ pfUI:RegisterModule("bags", function ()
         frame.bags:SetHeight(12)
         frame.bags:SetWidth(12)
         frame.bags:SetTextColor(1,1,.25,1)
-        frame.bags:SetFont("Interface\\AddOns\\pfUI\\fonts\\" .. pfUI_config.global.font_default .. ".ttf", pfUI_config.global.font_size, "OUTLINE")
+        frame.bags:SetFont(pfUI.font_default, pfUI_config.global.font_size, "OUTLINE")
         frame.bags.texture = frame.bags:CreateTexture("pfBagArrowUp")
         frame.bags.texture:SetTexture("Interface\\AddOns\\pfUI\\img\\up")
         frame.bags.texture:ClearAllPoints()
@@ -501,7 +512,7 @@ pfUI:RegisterModule("bags", function ()
         frame.keys:SetHeight(12)
         frame.keys:SetWidth(12)
         frame.keys:SetTextColor(1,1,.25,1)
-        frame.keys:SetFont("Interface\\AddOns\\pfUI\\fonts\\" .. pfUI_config.global.font_default .. ".ttf", pfUI_config.global.font_size, "OUTLINE")
+        frame.keys:SetFont(pfUI.font_default, pfUI_config.global.font_size, "OUTLINE")
         frame.keys.texture = frame.keys:CreateTexture("pfBagArrowUp")
         frame.keys.texture:SetTexture("Interface\\AddOns\\pfUI\\img\\key")
         frame.keys.texture:ClearAllPoints()
@@ -546,7 +557,7 @@ pfUI:RegisterModule("bags", function ()
         frame.search.edit:SetPoint("TOPLEFT", frame.search, "TOPLEFT", default_border*2, 0)
         frame.search.edit:SetPoint("BOTTOMRIGHT", frame.search, "BOTTOMRIGHT", -default_border*2, 0)
 
-        frame.search.edit:SetFont("Interface\\AddOns\\pfUI\\fonts\\" .. pfUI_config.global.font_default .. ".ttf", pfUI_config.global.font_size, "OUTLINE")
+        frame.search.edit:SetFont(pfUI.font_default, pfUI_config.global.font_size, "OUTLINE")
         frame.search.edit:SetAutoFocus(false)
         frame.search.edit:SetText("Search")
         frame.search.edit:SetTextColor(.5,.5,.5,1)
@@ -628,7 +639,7 @@ pfUI:RegisterModule("bags", function ()
         frame.bags:SetHeight(12)
         frame.bags:SetWidth(12)
         frame.bags:SetTextColor(1,1,.25,1)
-        frame.bags:SetFont("Interface\\AddOns\\pfUI\\fonts\\" .. pfUI_config.global.font_default .. ".ttf", pfUI_config.global.font_size, "OUTLINE")
+        frame.bags:SetFont(pfUI.font_default, pfUI_config.global.font_size, "OUTLINE")
         frame.bags.texture = frame.bags:CreateTexture("pfBagArrowUp")
         frame.bags.texture:SetTexture("Interface\\AddOns\\pfUI\\img\\up")
         frame.bags.texture:ClearAllPoints()

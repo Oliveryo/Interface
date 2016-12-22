@@ -1,5 +1,5 @@
 CreateFrame("Frame", "MPOWA", UIParent)
-MPOWA.Build = 26
+MPOWA.Build = 28
 MPOWA.Cloaded = false
 MPOWA.loaded = false
 MPOWA.selected = 1
@@ -93,6 +93,14 @@ MPOWA.SOUND = {
 	[54] = "shipswhistle.ogg", 
 	[55] = "kaching.ogg", 
 	[56] = "heartbeat.ogg",
+	[57] = "Hit1.ogg", -- Thanks to Sillywet!
+	[58] = "Hit2.ogg", -- Thanks to Sillywet!
+	[59] = "Hit3.ogg", -- Thanks to Sillywet!
+	[60] = "Hit4.ogg", -- Thanks to Sillywet!
+	[61] = "Hit5.ogg", -- Thanks to Sillywet!
+	[62] = "Hit6.ogg", -- Thanks to Sillywet!
+	[63] = "Hit7.ogg", -- Thanks to Sillywet!
+	[64] = "Hit8.ogg", -- Thanks to Sillywet!
 }
 MPOWA.ICONARRAY = {
 	["MPowa_IconFrame_ButtonContainer_Button"] = 27,
@@ -131,6 +139,33 @@ local MPowa_BuffFrameUpdateTime = 0
 local MPowa_BuffFrameFlashTime = 0
 local MPowa_BuffFrameFlashState = 0
 local MPowa_BUFF_ALPHA_VALUE = 0
+
+--[[
+local castByMe = {}
+local oldUseAction = UseAction
+UseAction = function(slot, checkCursor, onSelf)
+	MPowa_Tooltip:SetOwner(UIParent, "ANCHOR_NONE")
+	MPowa_Tooltip:ClearLines()
+	MPowa_Tooltip:SetAction(slot)
+	castByMe[MPowa_TooltipTextLeft1:GetText()] = GT()
+	oldUseAction(slot, checkCursor, onSelf)
+end
+
+local oldCastSpellByName = CastSpellByName
+CastSpellByName = function(spellName, onSelf)
+	castByMe[spellName] = GT()
+	oldCastSpellByName(spellName, onSelf)
+end
+
+local oldCastSpell = CastSpell
+CastSpell = function(spellID, spellbookType)
+	local spellName, spellRank = GetSpellName(spellID, spellbookType)
+	if MPOWA.auras[spellname] then
+		castByMe[spellName] = GT()
+	end
+	oldCastSpell(spellID, spellbookType)
+end
+--]]
 
 function MPOWA:OnEvent(event, arg1)
 	if event == "UNIT_AURA" then
@@ -285,7 +320,7 @@ function MPOWA:OnUpdate(elapsed)
 				if self:IsStacks(count or 0, cat) then
 				local duration = self:GetDuration(val, cat)
 					--self:Print("Showing: "..MPOWA_SAVE[cat]["buffname"])
-					if (count or 0)>1 then
+					if (count or 0)>1 and not path["hidestacks"] then
 						self.frames[cat][4]:SetText(count)
 						self.frames[cat][4]:Show()
 					else
@@ -492,7 +527,7 @@ function MPOWA:Iterate(unit)
 			MPowa_Tooltip:SetUnitBuff(unit, i)
 		end
 		local buff = MPowa_TooltipTextLeft1:GetText()
-		self:Push(buff, unit, p)
+		self:Push(buff, unit, p, false, MPowa_TooltipTextLeft2:GetText())
 		
 		if i<17 then
 			MPowa_Tooltip:ClearLines()
@@ -504,7 +539,7 @@ function MPOWA:Iterate(unit)
 				MPowa_Tooltip:SetUnitDebuff(unit, i)
 			end
 			debuff = MPowa_TooltipTextLeft1:GetText()
-			self:Push(debuff, unit, p)
+			self:Push(debuff, unit, p, true, MPowa_TooltipTextLeft2:GetText())
 		end
 		MPowa_Tooltip:Hide()
 		if not buff and not debuff then break end
@@ -534,7 +569,7 @@ function MPOWA:Iterate(unit)
 	end
 end
 
-function MPOWA:Push(aura, unit, i)
+function MPOWA:Push(aura, unit, i, isdebuff, debuffdesc)
 	if self.auras[aura] then
 		--self:Print("Attempt to push: "..aura.."/"..unit)
 		for cat, val in self.auras[aura] do
@@ -542,47 +577,48 @@ function MPOWA:Push(aura, unit, i)
 			local path = MPOWA_SAVE[val]
 			local bypass = self.active[val]
 			--self:Print("Before con "..aura)
-
-			if self:TernaryReturn(val, "alive", self:Reverse(UnitIsDeadOrGhost("player"))) and self:TernaryReturn(val, "mounted", self.mounted) and self:TernaryReturn(val, "incombat", UnitAffectingCombat("player")) and self:TernaryReturn(val, "inparty", self.party) and self:TernaryReturn(val, "inraid", UnitInRaid("player")) and self:TernaryReturn(val, "inbattleground", self.bg) and self:TernaryReturn(val, "inraidinstance", self.instance) and not path["cooldown"] then
-				BuffExist[val] = true
-				--self:Print("Pushed: "..aura.."//"..val.."//"..cat)
-				--self:Print("After con "..aura)
-				if path["enemytarget"] and unit == "target" then
-					--self:Print("after con 2 "..aura.. " "..i)
-					self.active[val] = i
-				elseif path["friendlytarget"] and unit == "target" then
-					self.active[val] = i
-				elseif path["raidgroupmember"] then -- have to check those vars
-					self.active[val] = i
-				elseif not path["enemytarget"] and not path["friendlytarget"] and not path["raidgroupmember"] and unit == "player" then
-					self.active[val] = i
-				end
-				if self.pushed[val] then
-					self.pushed[val] = self.pushed[val] + 1;
-				else
-					self.pushed[val] = 1;
-				end
-				--self:Print(path["buffname"].." is active! // "..val)
-				if self.active[val] and not bypass then
-					self.activeTimer[val] = GT()
-					if tnbr(self.frames[val][1]:GetAlpha())<=0.1 then
-						self.frames[val][1]:SetAlpha(tnbr(path["alpha"]))
+			if path["isdebuff"]==isdebuff and ((path["secondspecifier"] and path["secondspecifiertext"]==debuffdesc) or not path["secondspecifier"]) then
+				if self:TernaryReturn(val, "alive", self:Reverse(UnitIsDeadOrGhost("player"))) and self:TernaryReturn(val, "mounted", self.mounted) and self:TernaryReturn(val, "incombat", UnitAffectingCombat("player")) and self:TernaryReturn(val, "inparty", self.party) and self:TernaryReturn(val, "inraid", UnitInRaid("player")) and self:TernaryReturn(val, "inbattleground", self.bg) and self:TernaryReturn(val, "inraidinstance", self.instance) and not path["cooldown"] then
+					BuffExist[val] = true
+					--self:Print("Pushed: "..aura.."//"..val.."//"..cat)
+					--self:Print("After con "..aura)
+					if path["enemytarget"] and unit == "target" then
+						--self:Print("after con 2 "..aura.. " "..i)
+						self.active[val] = i
+					elseif path["friendlytarget"] and unit == "target" then
+						self.active[val] = i
+					elseif path["raidgroupmember"] then -- have to check those vars
+						self.active[val] = i
+					elseif not path["enemytarget"] and not path["friendlytarget"] and not path["raidgroupmember"] and unit == "player" then
+						self.active[val] = i
 					end
-					if path["usebeginsound"] then
-						if path.beginsound < 16 then
-							PlaySound(self.SOUND[path.beginsound], "master")
-						else
-							PlaySoundFile("Interface\\AddOns\\ModifiedPowerAuras\\Sounds\\"..self.SOUND[path.beginsound], "master")
+					if self.pushed[val] then
+						self.pushed[val] = self.pushed[val] + 1;
+					else
+						self.pushed[val] = 1;
+					end
+					--self:Print(path["buffname"].." is active! // "..val)
+					if self.active[val] and not bypass then
+						self.activeTimer[val] = GT()
+						if tnbr(self.frames[val][1]:GetAlpha())<=0.1 then
+							self.frames[val][1]:SetAlpha(tnbr(path["alpha"]))
 						end
-					end
-					if not path["secsleft"] then
-						self:FShow(val)
-					end
-					--self:Print("Is Visible: "..aura)
-					--self:Print("SHown")
-					--self:Print("Shown: "..path["buffname"].."/"..self.active[val])
-					if path["timer"] then
-						self.frames[val][3]:Show()
+						if path["usebeginsound"] then
+							if path.beginsound < 16 then
+								PlaySound(self.SOUND[path.beginsound], "master")
+							else
+								PlaySoundFile("Interface\\AddOns\\ModifiedPowerAuras\\Sounds\\"..self.SOUND[path.beginsound], "master")
+							end
+						end
+						if not path["secsleft"] then
+							self:FShow(val)
+						end
+						--self:Print("Is Visible: "..aura)
+						--self:Print("SHown")
+						--self:Print("Shown: "..path["buffname"].."/"..self.active[val])
+						if path["timer"] then
+							self.frames[val][3]:Show()
+						end
 					end
 				end
 			end
@@ -812,6 +848,10 @@ function MPOWA:Init()
 				MPOWA_SAVE[cat]["inraidinstance"] = 0
 			end
 			--self:Print(cat.."//"..MPOWA_SAVE[cat]["buffname"])
+
+			if not val["secondspecifiertext"] then
+				MPOWA_SAVE[cat]["secondspecifiertext"] = ""
+			end
 		end
 		val["test"] = false
 	end
@@ -895,7 +935,10 @@ function MPOWA:CreateSave(i)
 		icon_g = 1,
 		secsleft = false,
 		secsleftdur = 0,
-		inraidinstance = 0
+		inraidinstance = 0,
+		hidestacks = false,
+		secondspecifier = false,
+		secondspecifiertext = "",
 	}
 end
 
@@ -1164,6 +1207,7 @@ function MPOWA:Edit()
 		MPowa_ConfigFrame_Container_1_2_Checkbutton_FriendlyTarget:SetChecked(MPOWA_SAVE[self.CurEdit].friendlytarget)
 		MPowa_ConfigFrame_Container_1_2_Checkbutton_RaidMember:SetChecked(MPOWA_SAVE[self.CurEdit].raidgroupmember)
 		MPowa_ConfigFrame_Container_1_2_Checkbutton_XSecsRemaining:SetChecked(MPOWA_SAVE[self.CurEdit].secsleft)
+		MPowa_ConfigFrame_Container_1_2_Checkbutton_HideStacks:SetChecked(MPOWA_SAVE[self.CurEdit].hidestacks)
 		MPowa_ConfigFrame_Container_2_2_Checkbutton_Hundreds:SetChecked(MPOWA_SAVE[self.CurEdit].hundredth)
 		MPowa_ConfigFrame_Container_2_2_Checkbutton_FlashAnim:SetChecked(MPOWA_SAVE[self.CurEdit].flashanim)
 		MPowa_ConfigFrame_Container_2_2_Editbox_FlashAnim:SetText(MPOWA_SAVE[self.CurEdit].flashanimstart)
@@ -1200,6 +1244,19 @@ function MPOWA:Edit()
 			MPowa_ConfigFrame_Container_1_2_Editbox_SECLEFT:Show()
 		else
 			MPowa_ConfigFrame_Container_1_2_Editbox_SECLEFT:Hide()
+		end
+		MPowa_ConfigFrame_Container_1_2_Checkbutton_SecondSpecifier:SetChecked(MPOWA_SAVE[self.CurEdit].secondspecifier)
+		MPowa_ConfigFrame_Container_1_2_Editbox_SecondSpecifier:SetText(MPOWA_SAVE[self.CurEdit].secondspecifiertext)
+		if MPOWA_SAVE[MPOWA.CurEdit]["secondspecifier"] then
+			MPowa_ConfigFrame_Container_1_2_Editbox:SetWidth(135)
+			MPowa_ConfigFrame_Container_1_2_Editbox:ClearAllPoints()
+			MPowa_ConfigFrame_Container_1_2_Editbox:SetPoint("TOP", MPowa_ConfigFrame_Container_1_2, "TOP", -67.5, -20)
+			MPowa_ConfigFrame_Container_1_2_Editbox_SecondSpecifier:Show()
+		else
+			MPowa_ConfigFrame_Container_1_2_Editbox:SetWidth(270)
+			MPowa_ConfigFrame_Container_1_2_Editbox:ClearAllPoints()
+			MPowa_ConfigFrame_Container_1_2_Editbox:SetPoint("TOP", MPowa_ConfigFrame_Container_1_2, "TOP", 0, -20)
+			MPowa_ConfigFrame_Container_1_2_Editbox_SecondSpecifier:Hide()
 		end
 		MPOWA:TernarySetState(MPowa_ConfigFrame_Container_1_2_Checkbutton_Alive, MPOWA_SAVE[self.CurEdit].alive)
 		MPOWA:TernarySetState(MPowa_ConfigFrame_Container_1_2_Checkbutton_Mounted, MPOWA_SAVE[self.CurEdit].mounted)
@@ -1423,6 +1480,26 @@ function MPOWA:Editbox_Name(obj)
 		tinsert(self.auras[MPOWA_SAVE[self.CurEdit].buffname], self.CurEdit)
 	end
 	--self:Print(self.CurEdit)
+	
+	if MPOWA_SAVE[self.CurEdit].test or self.testAll then
+		_G("TextureFrame"..self.CurEdit):Hide()
+		_G("TextureFrame"..self.CurEdit):Show()
+	else
+		self:Iterate("player")
+		self:Iterate("target")
+	end
+end
+
+function MPOWA:Editbox_SecondSpecifier(obj)
+	local oldname = MPOWA_SAVE[self.CurEdit].secondspecifiertext
+	MPOWA_SAVE[self.CurEdit].secondspecifiertext = obj:GetText()
+
+	if oldname ~= MPOWA_SAVE[self.CurEdit].secondspecifiertext then
+		MPOWA_SAVE[self.CurEdit].texture = "Interface\\AddOns\\ModifiedPowerAuras\\images\\dummy.tga"
+		MPowa_ConfigFrame_Container_1_Icon_Texture:SetTexture(MPOWA_SAVE[self.CurEdit].texture)
+		_G("ConfigButton"..self.CurEdit.."_Icon"):SetTexture(MPOWA_SAVE[self.CurEdit].texture)
+		_G("TextureFrame"..self.CurEdit.."_Icon"):SetTexture(MPOWA_SAVE[self.CurEdit].texture)
+	end
 	
 	if MPOWA_SAVE[self.CurEdit].test or self.testAll then
 		_G("TextureFrame"..self.CurEdit):Hide()

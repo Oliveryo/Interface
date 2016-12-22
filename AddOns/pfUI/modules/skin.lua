@@ -59,7 +59,7 @@ pfUI:RegisterModule("skin", function ()
     b:SetScript("OnLeave", function()
       pfUI.utils:CreateBackdrop(b, nil, true)
     end)
-    b:SetFont("Interface\\AddOns\\pfUI\\fonts\\" .. pfUI_config.global.font_default .. ".ttf", pfUI_config.global.font_size, "OUTLINE")
+    b:SetFont(pfUI.font_default, pfUI_config.global.font_size, "OUTLINE")
   end
 
   for _, box in pairs(boxes) do
@@ -71,12 +71,26 @@ pfUI:RegisterModule("skin", function ()
     if v.SetTextColor then
       v:SetTextColor(1,1,1,1)
       v:SetPoint("TOP", GameMenuFrame, "TOP", 0, 16)
-      v:SetFont("Interface\\AddOns\\pfUI\\fonts\\" .. pfUI_config.global.font_default .. ".ttf", pfUI_config.global.font_size + 2, "OUTLINE")
+      v:SetFont(pfUI.font_default, pfUI_config.global.font_size + 2, "OUTLINE")
     end
   end
 
 pfUI.utils:CreateBackdrop(ShoppingTooltip1)
 pfUI.utils:CreateBackdrop(ShoppingTooltip2)
+
+ShoppingTooltip1:SetScript("OnShow", function()
+  local a, b, c, d, e = this:GetPoint()
+  local border = tonumber(pfUI_config.appearance.border.default)
+  if not d or d == 0 then d = (border*2)+d+1 end
+  this:SetPoint(a, b, c, d, e)
+end)
+
+ShoppingTooltip2:SetScript("OnShow", function()
+  local a, b, c, d, e = this:GetPoint()
+  local border = tonumber(pfUI_config.appearance.border.default)
+  if not d or d == 0 then d = (border*2)+d+1 end
+  this:SetPoint(a, b, c, d, e)
+end)
 
 pfUI.utils:CreateBackdrop(TicketStatusFrame)
   TicketStatusFrame:ClearAllPoints()
@@ -110,4 +124,11 @@ pfUI.utils:CreateBackdrop(TicketStatusFrame)
     end
   end)
 
+  if pfUI_config.global.errors_limit == "1" then
+    UIErrorsFrame:SetHeight(25)
+  end
+
+  if pfUI_config.global.errors_hide == "1" then
+    UIErrorsFrame:Hide()
+  end
 end)

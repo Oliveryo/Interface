@@ -216,7 +216,7 @@ end
 local function initPlayerDrop()
 	UnitPopup_ShowMenu(PlayerFrameDropDown, "SELF", "player")
 	if not (UnitInRaid("player") or GetNumPartyMembers() > 0) or UnitIsPartyLeader("player") and PlayerFrameDropDown.init then
-		UIDropDownMenu_AddButton({text = "Reset Instances", func = ResetInstances, notCheckable = 1}, 1)
+		UIDropDownMenu_AddButton({text = RESET_INSTANCES, func = ResetInstances, notCheckable = 1}, 1)
 		PlayerFrameDropDown.init = nil
 	end
 end
@@ -321,8 +321,8 @@ local function StopMovingOrSizing()
 	LunaUF.db.profile.units[this.unitGroup].position.y = y * scale
 	for i=2,6 do
 		if LunaOptionsFrame.pages[i].id == this.unitGroup then
-			LunaOptionsFrame.pages[i].xInput:SetText(x)
-			LunaOptionsFrame.pages[i].yInput:SetText(y)
+			LunaOptionsFrame.pages[i].xInput:SetText(x * scale)
+			LunaOptionsFrame.pages[i].yInput:SetText(y * scale)
 		end
 	end
 end

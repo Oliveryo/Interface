@@ -16,15 +16,6 @@ pfLocaleBagtypes["enUS"] = {
   ["Bag"] = "DEFAULT"
 }
 
-pfLocaleInvtypes["enUS"] = {
-  ["INVTYPE_WAND"] = "Wand",
-  ["INVTYPE_GUN"] = "Gun",
-  ["INVTYPE_GUNPROJECTILE"] = "Projectile",
-  ["INVTYPE_BOWPROJECTILE"] = "Projectile",
-  ["INVTYPE_CROSSBOW"] = "Crossbow",
-  ["INVTYPE_THROWN"] = "Thrown",
-}
-
 pfLocaleShift["enUS"] = {
   ['BattleStance'] = "Battle Stance",
   ['DefensiveStance'] = "Defensive Stance",

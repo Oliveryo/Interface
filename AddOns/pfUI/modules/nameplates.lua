@@ -41,12 +41,6 @@ pfUI:RegisterModule("nameplates", function ()
         local healthbar = nameplate:GetChildren()
         local border, glow, name, level, levelicon , raidicon = nameplate:GetRegions()
 
-        if pfUI_config.nameplates.players == "1" then
-          if not pfUI_playerDB[name:GetText()] or not pfUI_playerDB[name:GetText()]["class"] then
-            nameplate:Hide()
-          end
-        end
-
         -- scan player (idle targeting)
         if pfUI.nameplates.targets[name:GetText()] == nil and UnitName("target") == nil then
           TargetByName(name:GetText(), true)
@@ -85,7 +79,7 @@ pfUI:RegisterModule("nameplates", function ()
         -- healthbar
         healthbar:SetStatusBarTexture("Interface\\AddOns\\pfUI\\img\\bar")
         healthbar:ClearAllPoints()
-        healthbar:SetPoint("TOP", nameplate, "TOP", 0, tonumber(pfUI_config.nameplates.vpos))
+        healthbar:SetPoint("CENTER", nameplate, "CENTER", 0, -10)
         healthbar:SetWidth(110)
         healthbar:SetHeight(7)
 
@@ -93,24 +87,9 @@ pfUI:RegisterModule("nameplates", function ()
           healthbar.bg = healthbar:CreateTexture(nil, "BORDER")
           healthbar.bg:SetTexture(0,0,0,0.90)
           healthbar.bg:ClearAllPoints()
-          healthbar.bg:SetPoint("CENTER", healthbar, "CENTER", 0, 0)
+          healthbar.bg:SetPoint("CENTER", nameplate, "CENTER", 0, -10)
           healthbar.bg:SetWidth(healthbar:GetWidth() + 3)
           healthbar.bg:SetHeight(healthbar:GetHeight() + 3)
-        end
-
-        if pfUI_config.nameplates.showhp == "1" then
-          if healthbar.hptext == nil then
-            healthbar.hptext = healthbar:CreateFontString("Status", "DIALOG", "GameFontNormal")
-            healthbar.hptext:SetPoint("RIGHT", healthbar, "RIGHT")
-            healthbar.hptext:SetNonSpaceWrap(false)
-            healthbar.hptext:SetFontObject(GameFontWhite)
-            healthbar.hptext:SetTextColor(1,1,1,1)
-            healthbar.hptext:SetFont(STANDARD_TEXT_FONT, 10)
-          end
-
-          local min, max = healthbar:GetMinMaxValues()
-          local cur = healthbar:GetValue()
-          healthbar.hptext:SetText(cur .. " / " .. max)
         end
 
         -- raidtarget
@@ -122,19 +101,20 @@ pfUI:RegisterModule("nameplates", function ()
         -- debuffs
         if nameplate.debuffs == nil then nameplate.debuffs = {} end
         for j=1, 16, 1 do
-          if nameplate.debuffs[j] == nil then
+          if nameplate.debuffs[j] == nil and j <= 8 then
             nameplate.debuffs[j] = nameplate:CreateTexture(nil, "BORDER")
             nameplate.debuffs[j]:SetTexture(0,0,0,0)
             nameplate.debuffs[j]:ClearAllPoints()
+            nameplate.debuffs[j]:SetPoint("BOTTOMLEFT", healthbar, "BOTTOMLEFT", (j-1) * 12, -15)
             nameplate.debuffs[j]:SetWidth(12)
             nameplate.debuffs[j]:SetHeight(12)
-            if j == 1 then
-              nameplate.debuffs[j]:SetPoint("TOPLEFT", healthbar, "BOTTOMLEFT", 0, -3)
-            elseif j <= 8 then
-              nameplate.debuffs[j]:SetPoint("LEFT", nameplate.debuffs[j-1], "RIGHT", 1, 0)
-            elseif j > 8 then
-              nameplate.debuffs[j]:SetPoint("TOPLEFT", nameplate.debuffs[1], "BOTTOMLEFT", (j-9) * 13, -1)
-            end
+          elseif nameplate.debuffs[j] == nil and j > 8 then
+            nameplate.debuffs[j] = nameplate:CreateTexture(nil, "BORDER")
+            nameplate.debuffs[j]:SetTexture(0,0,0,0)
+            nameplate.debuffs[j]:ClearAllPoints()
+            nameplate.debuffs[j]:SetPoint("BOTTOMLEFT", healthbar, "BOTTOMLEFT", (j-9) * 12, -28)
+            nameplate.debuffs[j]:SetWidth(12)
+            nameplate.debuffs[j]:SetHeight(12)
           end
         end
 
@@ -163,10 +143,8 @@ pfUI:RegisterModule("nameplates", function ()
         -- adjust font
         name:SetFont(STANDARD_TEXT_FONT,12,"OUTLINE")
         name:SetPoint("BOTTOM", healthbar, "CENTER", 0, 7)
-        level:SetFont(STANDARD_TEXT_FONT,12, "OUTLINE")
-        level:ClearAllPoints()
+        level:SetFont(STANDARD_TEXT_FONT,12, "OUTLINE") --
         level:SetPoint("RIGHT", healthbar, "LEFT", -1, 0)
-        levelicon:ClearAllPoints()
         levelicon:SetPoint("RIGHT", healthbar, "LEFT", -1, 0)
 
         -- tweak the colors to match the rest
@@ -214,7 +192,7 @@ pfUI:RegisterModule("nameplates", function ()
         end
 
         -- show castbar
-        if pfUI.castbar and pfUI_config.nameplates["showcastbar"] == "1" and pfUI.castbar.target.casterDB[name:GetText()] ~= nil and pfUI.castbar.target.casterDB[name:GetText()]["cast"] ~= nil then
+        if pfUI_config.nameplates["showcastbar"] == "1" and pfUI.castbar.target.casterDB[name:GetText()] ~= nil and pfUI.castbar.target.casterDB[name:GetText()]["cast"] ~= nil then
 
           -- create frames
           if healthbar.castbar == nil then
@@ -246,15 +224,6 @@ pfUI:RegisterModule("nameplates", function ()
               healthbar.castbar.text:SetFont(STANDARD_TEXT_FONT, 10, "OUTLINE")
             end
 
-            if healthbar.castbar.spell == nil then
-              healthbar.castbar.spell = healthbar.castbar:CreateFontString("Status", "DIALOG", "GameFontNormal")
-              healthbar.castbar.spell:SetPoint("CENTER", healthbar.castbar, "CENTER")
-              healthbar.castbar.spell:SetNonSpaceWrap(false)
-              healthbar.castbar.spell:SetFontObject(GameFontWhite)
-              healthbar.castbar.spell:SetTextColor(1,1,1,1)
-              healthbar.castbar.spell:SetFont(STANDARD_TEXT_FONT, 10, "OUTLINE")
-            end
-
             if healthbar.castbar.icon == nil then
               healthbar.castbar.icon = healthbar.castbar:CreateTexture(nil, "BORDER")
               healthbar.castbar.icon:ClearAllPoints()
@@ -280,15 +249,7 @@ pfUI:RegisterModule("nameplates", function ()
             healthbar.castbar:SetMinMaxValues(0,  pfUI.castbar.target.casterDB[name:GetText()]["casttime"])
             healthbar.castbar:SetValue(GetTime() -  pfUI.castbar.target.casterDB[name:GetText()]["starttime"])
             healthbar.castbar.text:SetText(round( pfUI.castbar.target.casterDB[name:GetText()]["starttime"] +  pfUI.castbar.target.casterDB[name:GetText()]["casttime"] - GetTime(),1))
-            if healthbar.castbar.spell then
-              if pfUI_config.nameplates.spellname == "1" then
-                healthbar.castbar.spell:SetText(pfUI.castbar.target.casterDB[name:GetText()]["cast"])
-              else
-                healthbar.castbar.spell:SetText("")
-              end
-            end
             healthbar.castbar:Show()
-            nameplate.debuffs[1]:SetPoint("TOPLEFT", healthbar.castbar, "BOTTOMLEFT", 0, -3)
 
             if pfUI.castbar.target.casterDB[name:GetText()]["icon"] then
               healthbar.castbar.icon:SetTexture("Interface\\Icons\\" ..  pfUI.castbar.target.casterDB[name:GetText()]["icon"])
@@ -297,7 +258,6 @@ pfUI:RegisterModule("nameplates", function ()
           end
         elseif healthbar.castbar then
           healthbar.castbar:Hide()
-          nameplate.debuffs[1]:SetPoint("TOPLEFT", healthbar, "BOTTOMLEFT", 0, -3)
         end
       end
     end

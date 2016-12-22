@@ -161,7 +161,7 @@ pfUI:RegisterModule("gui", function ()
           frame.drag.backdrop:SetBackdropBorderColor(.2, 1, .8)
           frame.drag:EnableMouseWheel(1)
           frame.drag.text = frame.drag:CreateFontString("Status", "LOW", "GameFontNormal")
-          frame.drag.text:SetFont(pfUI.font_default, pfUI_config.global.font_size, "OUTLINE")
+          frame.drag.text:SetFont("Interface\\AddOns\\pfUI\\fonts\\" .. pfUI_config.global.font_default .. ".ttf", pfUI_config.global.font_size, "OUTLINE")
           frame.drag.text:ClearAllPoints()
           frame.drag.text:SetAllPoints(frame.drag)
           frame.drag.text:SetPoint("CENTER", 0, 0)
@@ -273,7 +273,6 @@ pfUI:RegisterModule("gui", function ()
 
             pfUI_config.position[frame:GetName()]["xpos"] = xpos
             pfUI_config.position[frame:GetName()]["ypos"] = ypos
-            pfUI.gui.settingChanged = true
         end)
 
         if pfUI.gitter:IsShown() then
@@ -344,7 +343,7 @@ pfUI:RegisterModule("gui", function ()
     end
     pfUI.utils:CreateBackdrop(frame.switch, nil, true)
     frame.switch.text = frame.switch:CreateFontString("Status", "LOW", "GameFontNormal")
-    frame.switch.text:SetFont(pfUI.font_default, pfUI_config.global.font_size, "OUTLINE")
+    frame.switch.text:SetFont("Interface\\AddOns\\pfUI\\fonts\\" .. pfUI_config.global.font_default .. ".ttf", pfUI_config.global.font_size, "OUTLINE")
     frame.switch.text:SetAllPoints(frame.switch)
     frame.switch.text:SetPoint("CENTER", 0, 0)
     frame.switch.text:SetFontObject(GameFontWhite)
@@ -360,7 +359,7 @@ pfUI:RegisterModule("gui", function ()
     -- do not show title on bottom buttons
     if not bottom and not func then
       frame.title = frame:CreateFontString("Status", "LOW", "GameFontNormal")
-      frame.title:SetFont(pfUI.font_default, pfUI_config.global.font_size + 2, "OUTLINE")
+      frame.title:SetFont("Interface\\AddOns\\pfUI\\fonts\\" .. pfUI_config.global.font_default .. ".ttf", pfUI_config.global.font_size + 2, "OUTLINE")
       frame.title:SetPoint("TOP", 0, -10)
       frame.title:SetTextColor(.2,1,.8)
       frame.title:SetText(text)
@@ -387,7 +386,7 @@ pfUI:RegisterModule("gui", function ()
 
     -- caption
     frame.caption = frame:CreateFontString("Status", "LOW", "GameFontNormal")
-    frame.caption:SetFont(pfUI.font_default, pfUI_config.global.font_size + 2, "OUTLINE")
+    frame.caption:SetFont("Interface\\AddOns\\pfUI\\fonts\\" .. pfUI_config.global.font_default .. ".ttf", pfUI_config.global.font_size + 2, "OUTLINE")
     frame.caption:SetAllPoints(frame)
     frame.caption:SetFontObject(GameFontWhite)
     frame.caption:SetJustifyH("LEFT")
@@ -398,54 +397,6 @@ pfUI:RegisterModule("gui", function ()
     frame.category = category
     frame.config = config
 
-    if widget == "color" then
-      -- color picker
-      frame.color = CreateFrame("Button", nil, frame)
-      frame.color:SetWidth(12)
-      frame.color:SetHeight(12)
-      pfUI.utils:CreateBackdrop(frame.color)
-      frame.color:SetPoint("TOPRIGHT" , 0, -4)
-      frame.color.prev = frame.color.backdrop:CreateTexture("OVERLAY")
-      frame.color.prev:SetAllPoints(frame.color)
-
-      local cr, cg, cb, ca = strsplit(",", category[config])
-      frame.color.prev:SetTexture(cr,cg,cb,ca)
-
-      frame.color:SetScript("OnClick", function()
-        local cr, cg, cb, ca = strsplit(",", category[config])
-        local preview = this.prev
-
-        function ColorPickerFrame.func()
-          local r,g,b = ColorPickerFrame:GetColorRGB()
-          local a = 1 - OpacitySliderFrame:GetValue()
-
-          r = round(r, 1)
-          g = round(g, 1)
-          b = round(b, 1)
-          a = round(a, 1)
-
-          preview:SetTexture(r,g,b,a)
-
-          if not this:GetParent():IsShown() then
-            category[config] = r .. "," .. g .. "," .. b .. "," .. a
-            pfUI.gui.settingChanged = true
-          end
-        end
-
-        function ColorPickerFrame.cancelFunc()
-          preview:SetTexture(cr,cg,cb,ca)
-        end
-
-        ColorPickerFrame.opacityFunc = ColorPickerFrame.func
-        ColorPickerFrame.element = this
-        ColorPickerFrame.opacity = 1 - ca
-        ColorPickerFrame.hasOpacity = 1
-        ColorPickerFrame:SetColorRGB(cr,cg,cb)
-        ColorPickerFrame:Show()
-        ColorPickerFrame:SetFrameStrata("DIALOG")
-      end)
-    end
-
     if widget == "warning" then
       pfUI.utils:CreateBackdrop(frame, nil, true)
       frame:SetBackdropBorderColor(1,.5,.5)
@@ -454,16 +405,6 @@ pfUI:RegisterModule("gui", function ()
       parent.objectCount = parent.objectCount + 2
       frame.caption:SetJustifyH("CENTER")
       frame.caption:SetJustifyV("CENTER")
-    end
-
-    if widget == "header" then
-      frame:SetBackdrop(nil)
-      frame:SetHeight(40)
-      parent.objectCount = parent.objectCount + 1
-      frame.caption:SetJustifyH("LEFT")
-      frame.caption:SetJustifyV("BOTTOM")
-      frame.caption:SetTextColor(.2,1,.8,1)
-      frame.caption:SetAllPoints(frame)
     end
 
     -- use text widget (default)
@@ -660,21 +601,15 @@ pfUI:RegisterModule("gui", function ()
   -- global
   pfUI.gui.global = pfUI.gui:CreateConfigTab("Global Settings")
   local values = { "arial", "homespun", "diediedie" }
-  pfUI.gui:CreateConfig(pfUI.gui.global, "Use Pixelperfect (native resolution) scaling", pfUI_config.global, "pixelperfect", "checkbox")
   pfUI.gui:CreateConfig(pfUI.gui.global, "Fontsize", pfUI_config.global, "font_size")
   pfUI.gui:CreateConfig(pfUI.gui.global, "Default Font", pfUI_config.global, "font_default", "dropdown", values)
   pfUI.gui:CreateConfig(pfUI.gui.global, "Square Font", pfUI_config.global, "font_square", "dropdown", values)
   pfUI.gui:CreateConfig(pfUI.gui.global, "Combat Font", pfUI_config.global, "font_combat", "dropdown", values)
-  pfUI.gui:CreateConfig(pfUI.gui.global, "Force region compatible font", pfUI_config.global, "force_region", "checkbox")
-  pfUI.gui:CreateConfig(pfUI.gui.global, "Limit UIErrors to one line", pfUI_config.global, "errors_limit", "checkbox")
-  pfUI.gui:CreateConfig(pfUI.gui.global, "Disable UIErrors", pfUI_config.global, "errors_hide", "checkbox")
-  pfUI.gui:CreateConfig(pfUI.gui.global, "Hide Buffs", pfUI_config.global, "hidebuff", "checkbox")
-  pfUI.gui:CreateConfig(pfUI.gui.global, "Hide Weapon Buffs", pfUI_config.global, "hidewbuff", "checkbox")
 
   -- appearance
   pfUI.gui.appearance = pfUI.gui:CreateConfigTab("Appearance")
-  pfUI.gui:CreateConfig(pfUI.gui.appearance, "Background Color", pfUI_config.appearance.border, "background", "color")
-  pfUI.gui:CreateConfig(pfUI.gui.appearance, "Border Color", pfUI_config.appearance.border, "color", "color")
+  pfUI.gui:CreateConfig(pfUI.gui.appearance, "Background Color", pfUI_config.appearance.border, "background")
+  pfUI.gui:CreateConfig(pfUI.gui.appearance, "Border Color", pfUI_config.appearance.border, "color")
   pfUI.gui:CreateConfig(pfUI.gui.appearance, "Default Bordersize", pfUI_config.appearance.border, "default")
   pfUI.gui:CreateConfig(pfUI.gui.appearance, "Actionbar Bordersize", pfUI_config.appearance.border, "actionbars")
   pfUI.gui:CreateConfig(pfUI.gui.appearance, "UnitFrame Bordersize", pfUI_config.appearance.border, "unitframes")
@@ -683,89 +618,61 @@ pfUI:RegisterModule("gui", function ()
   pfUI.gui:CreateConfig(pfUI.gui.appearance, "Panel Bordersize", pfUI_config.appearance.border, "panels")
   pfUI.gui:CreateConfig(pfUI.gui.appearance, "Chat Bordersize", pfUI_config.appearance.border, "chat")
   pfUI.gui:CreateConfig(pfUI.gui.appearance, "Bags Bordersize", pfUI_config.appearance.border, "bags")
-  pfUI.gui:CreateConfig(pfUI.gui.appearance, "Cooldown color (Minutes)", pfUI_config.appearance.cd, "mincolor", "color")
-  pfUI.gui:CreateConfig(pfUI.gui.appearance, "Cooldown color (Hours)", pfUI_config.appearance.cd, "hourcolor", "color")
-  pfUI.gui:CreateConfig(pfUI.gui.appearance, "Cooldown color (Days)", pfUI_config.appearance.cd, "daycolor", "color")
+  pfUI.gui:CreateConfig(pfUI.gui.appearance, "Cooldown color (Minutes)", pfUI_config.appearance.cd, "mincolor")
+  pfUI.gui:CreateConfig(pfUI.gui.appearance, "Cooldown color (Hours)", pfUI_config.appearance.cd, "hourcolor")
+  pfUI.gui:CreateConfig(pfUI.gui.appearance, "Cooldown color (Days)", pfUI_config.appearance.cd, "daycolor")
   pfUI.gui:CreateConfig(pfUI.gui.appearance, "Cooldown text threshold", pfUI_config.appearance.cd, "threshold")
-  pfUI.gui:CreateConfig(pfUI.gui.appearance, "Castbar color", pfUI_config.appearance.castbar, "castbarcolor", "color")
-  pfUI.gui:CreateConfig(pfUI.gui.appearance, "Castbar color (Channeling)", pfUI_config.appearance.castbar, "channelcolor", "color")
-  pfUI.gui:CreateConfig(pfUI.gui.appearance, "Auto-resize Lootframe", pfUI_config.appearance.loot, "autoresize", "checkbox")
-  pfUI.gui:CreateConfig(pfUI.gui.appearance, "Show combat glow effect on screen edges", pfUI_config.appearance.infight, "screen", "checkbox")
-  pfUI.gui:CreateConfig(pfUI.gui.appearance, "Show combat glow effect on common unit frames", pfUI_config.appearance.infight, "common", "checkbox")
-  pfUI.gui:CreateConfig(pfUI.gui.appearance, "Show combat glow effect on group frames", pfUI_config.appearance.infight, "group", "checkbox")
 
   -- modules
   pfUI.gui.modules = pfUI.gui:CreateConfigTab("Modules")
+  pfUI.gui:CreateConfig(pfUI.gui.modules, "|cffff5555Warning:\n|cffffaaaa Disabling modules is highly experimental.\nDo not disable modules if you don't know how to fix errors.|r", nil, nil, "warning")
+
   for i,m in pairs(pfUI.modules) do
-    if m ~= "gui" then
-      -- create disabled entry if not existing and display
-      pfUI:UpdateConfig("disabled", nil, m, "0")
-      pfUI.gui:CreateConfig(pfUI.gui.modules, "Disable " .. m, pfUI_config.disabled, m, "checkbox")
-    end
+    -- create disabled entry if not existing and display
+    pfUI:UpdateConfig("disabled", nil, m, "0")
+    pfUI.gui:CreateConfig(pfUI.gui.modules, "Disable " .. m, pfUI_config.disabled, m, "checkbox")
   end
 
   -- unitframes
   pfUI.gui.uf = pfUI.gui:CreateConfigTab("UnitFrames")
-  pfUI.gui:CreateConfig(pfUI.gui.uf, "Settings", nil, nil, "header")
   pfUI.gui:CreateConfig(pfUI.gui.uf, "Disable pfUI-UnitFrames", pfUI_config.unitframes, "disable", "checkbox")
-  pfUI.gui:CreateConfig(pfUI.gui.uf, "Use pastel colors", pfUI_config.unitframes, "pastel", "checkbox")
-  pfUI.gui:CreateConfig(pfUI.gui.uf, "Use dark shades for healthbars", pfUI_config.unitframes, "dark", "checkbox")
   pfUI.gui:CreateConfig(pfUI.gui.uf, "Animation speed", pfUI_config.unitframes, "animation_speed")
   pfUI.gui:CreateConfig(pfUI.gui.uf, "Show portrait", pfUI_config.unitframes, "portrait", "checkbox")
   pfUI.gui:CreateConfig(pfUI.gui.uf, "Buff size", pfUI_config.unitframes, "buff_size")
   pfUI.gui:CreateConfig(pfUI.gui.uf, "Debuff size", pfUI_config.unitframes, "debuff_size")
   pfUI.gui:CreateConfig(pfUI.gui.uf, "Layout", pfUI_config.unitframes, "layout", "dropdown", { "default", "tukui" })
-  pfUI.gui:CreateConfig(pfUI.gui.uf, "Enable Clickcast for all frames", pfUI_config.unitframes, "globalclick", "checkbox")
-
-  pfUI.gui:CreateConfig(pfUI.gui.uf, "Player", nil, nil, "header")
-  pfUI.gui:CreateConfig(pfUI.gui.uf, "Health width", pfUI_config.unitframes.player, "width")
-  pfUI.gui:CreateConfig(pfUI.gui.uf, "Health height", pfUI_config.unitframes.player, "height")
-  pfUI.gui:CreateConfig(pfUI.gui.uf, "Powerbar height", pfUI_config.unitframes.player, "pheight")
-  pfUI.gui:CreateConfig(pfUI.gui.uf, "Powerbar spacing", pfUI_config.unitframes.player, "pspace")
+  pfUI.gui:CreateConfig(pfUI.gui.uf, "Player width", pfUI_config.unitframes.player, "width")
+  pfUI.gui:CreateConfig(pfUI.gui.uf, "Player height", pfUI_config.unitframes.player, "height")
+  pfUI.gui:CreateConfig(pfUI.gui.uf, "Player powerbar height", pfUI_config.unitframes.player, "pheight")
+  pfUI.gui:CreateConfig(pfUI.gui.uf, "Player powerbar spacing", pfUI_config.unitframes.player, "pspace")
   pfUI.gui:CreateConfig(pfUI.gui.uf, "Show PvP Icon", pfUI_config.unitframes.player, "showPVP", "checkbox")
   pfUI.gui:CreateConfig(pfUI.gui.uf, "Align PvP Icon to Minimap", pfUI_config.unitframes.player, "showPVPMinimap", "checkbox")
-  pfUI.gui:CreateConfig(pfUI.gui.uf, "Buff position", pfUI_config.unitframes.player, "buffs", "dropdown", { "top", "bottom", "hide"})
-  pfUI.gui:CreateConfig(pfUI.gui.uf, "Show energy ticks", pfUI_config.unitframes.player, "energy", "checkbox")
-
-  pfUI.gui:CreateConfig(pfUI.gui.uf, "Target", nil, nil, "header")
-  pfUI.gui:CreateConfig(pfUI.gui.uf, "Health width", pfUI_config.unitframes.target, "width")
-  pfUI.gui:CreateConfig(pfUI.gui.uf, "Health height", pfUI_config.unitframes.target, "height")
-  pfUI.gui:CreateConfig(pfUI.gui.uf, "Powerbar height", pfUI_config.unitframes.target, "pheight")
-  pfUI.gui:CreateConfig(pfUI.gui.uf, "Powerbar spacing", pfUI_config.unitframes.target, "pspace")
-  pfUI.gui:CreateConfig(pfUI.gui.uf, "Buff position", pfUI_config.unitframes.target, "buffs", "dropdown", { "top", "bottom", "hide"})
-
-  pfUI.gui:CreateConfig(pfUI.gui.uf, "Group", nil, nil, "header")
-  pfUI.gui:CreateConfig(pfUI.gui.uf, "Powerbar spacing", pfUI_config.unitframes.group, "pspace")
-  pfUI.gui:CreateConfig(pfUI.gui.uf, "Hide group while in raid", pfUI_config.unitframes.group, "hide_in_raid", "checkbox")
-  pfUI.gui:CreateConfig(pfUI.gui.uf, "Enable Clickcast", pfUI_config.unitframes.group, "clickcast", "checkbox")
-  pfUI.gui:CreateConfig(pfUI.gui.uf, "Enable Raidframe's buff behaviour for Group", pfUI_config.unitframes.group, "raid_buffs", "checkbox")
-  pfUI.gui:CreateConfig(pfUI.gui.uf, "Enable Raidframe's debuff behaviour for Group", pfUI_config.unitframes.group, "raid_debuffs", "checkbox")
-
-  pfUI.gui:CreateConfig(pfUI.gui.uf, "Raid", nil, nil, "header")
-  pfUI.gui:CreateConfig(pfUI.gui.uf, "Powerbar spacing", pfUI_config.unitframes.raid, "pspace")
-  pfUI.gui:CreateConfig(pfUI.gui.uf, "Invert Raid-healthbar", pfUI_config.unitframes.raid, "invert_healthbar", "checkbox")
-  pfUI.gui:CreateConfig(pfUI.gui.uf, "Show missing HP on raidframes", pfUI_config.unitframes.raid, "show_missing", "checkbox")
-  pfUI.gui:CreateConfig(pfUI.gui.uf, "Click-cast", pfUI_config.unitframes.raid, "clickcast")
-  pfUI.gui:CreateConfig(pfUI.gui.uf, "Click-cast (Shift)", pfUI_config.unitframes.raid, "clickcast_shift")
-  pfUI.gui:CreateConfig(pfUI.gui.uf, "Click-cast (Alt)", pfUI_config.unitframes.raid, "clickcast_alt")
-  pfUI.gui:CreateConfig(pfUI.gui.uf, "Click-cast (Ctrl)", pfUI_config.unitframes.raid, "clickcast_ctrl")
-  pfUI.gui:CreateConfig(pfUI.gui.uf, "Show my buffs", pfUI_config.unitframes.raid, "buffs_buffs", "checkbox")
-  pfUI.gui:CreateConfig(pfUI.gui.uf, "Show hots", pfUI_config.unitframes.raid, "buffs_hots", "checkbox")
-  pfUI.gui:CreateConfig(pfUI.gui.uf, "Show my procs", pfUI_config.unitframes.raid, "buffs_procs", "checkbox")
-  pfUI.gui:CreateConfig(pfUI.gui.uf, "Only display hots of my class", pfUI_config.unitframes.raid, "buffs_classonly", "checkbox")
-  pfUI.gui:CreateConfig(pfUI.gui.uf, "Show Debuff indicators", pfUI_config.unitframes.raid, "debuffs_enable", "checkbox")
-  pfUI.gui:CreateConfig(pfUI.gui.uf, "Only display Debuffs for my class", pfUI_config.unitframes.raid, "debuffs_class", "checkbox")
-
-  pfUI.gui:CreateConfig(pfUI.gui.uf, "Other", nil, nil, "header")
+  pfUI.gui:CreateConfig(pfUI.gui.uf, "Target width", pfUI_config.unitframes.target, "width")
+  pfUI.gui:CreateConfig(pfUI.gui.uf, "Target height", pfUI_config.unitframes.target, "height")
+  pfUI.gui:CreateConfig(pfUI.gui.uf, "Target powerbar height", pfUI_config.unitframes.target, "pheight")
+  pfUI.gui:CreateConfig(pfUI.gui.uf, "Target powerbar spacing", pfUI_config.unitframes.target, "pspace")
   pfUI.gui:CreateConfig(pfUI.gui.uf, "TargetTarget powerbar spacing", pfUI_config.unitframes.ttarget, "pspace")
   pfUI.gui:CreateConfig(pfUI.gui.uf, "Pet powerbar spacing", pfUI_config.unitframes.pet, "pspace")
+  pfUI.gui:CreateConfig(pfUI.gui.uf, "Group powerbar spacing", pfUI_config.unitframes.group, "pspace")
+  pfUI.gui:CreateConfig(pfUI.gui.uf, "Hide group while in raid", pfUI_config.unitframes.group, "hide_in_raid", "checkbox")
+  pfUI.gui:CreateConfig(pfUI.gui.uf, "Raid powerbar spacing", pfUI_config.unitframes.raid, "pspace")
+  pfUI.gui:CreateConfig(pfUI.gui.uf, "Invert Raid-healthbar", pfUI_config.unitframes.raid, "invert_healthbar", "checkbox")
+  pfUI.gui:CreateConfig(pfUI.gui.uf, "Show missing HP on raidframes", pfUI_config.unitframes.raid, "show_missing", "checkbox")
+  pfUI.gui:CreateConfig(pfUI.gui.uf, "Click-cast on Raidframe", pfUI_config.unitframes.raid, "clickcast")
+  pfUI.gui:CreateConfig(pfUI.gui.uf, "Click-cast on Raidframe (Shift)", pfUI_config.unitframes.raid, "clickcast_shift")
+  pfUI.gui:CreateConfig(pfUI.gui.uf, "Click-cast on Raidframe (Alt)", pfUI_config.unitframes.raid, "clickcast_alt")
+  pfUI.gui:CreateConfig(pfUI.gui.uf, "Click-cast on Raidframe (Ctrl)", pfUI_config.unitframes.raid, "clickcast_ctrl")
+  pfUI.gui:CreateConfig(pfUI.gui.uf, "Show Buffs on Raidframes", pfUI_config.unitframes.raid, "buffs_buffs", "checkbox")
+  pfUI.gui:CreateConfig(pfUI.gui.uf, "Show Hots on Raidframes", pfUI_config.unitframes.raid, "buffs_hots", "checkbox")
+  pfUI.gui:CreateConfig(pfUI.gui.uf, "Show Procs on Raidframes", pfUI_config.unitframes.raid, "buffs_procs", "checkbox")
+  pfUI.gui:CreateConfig(pfUI.gui.uf, "Only display Hots of my class", pfUI_config.unitframes.raid, "buffs_classonly", "checkbox")
+  pfUI.gui:CreateConfig(pfUI.gui.uf, "Show Debuff indicators on Raidframes", pfUI_config.unitframes.raid, "debuffs_enable", "checkbox")
+  pfUI.gui:CreateConfig(pfUI.gui.uf, "Only display Debuffs for my class", pfUI_config.unitframes.raid, "debuffs_class", "checkbox")
 
   -- actionbar
   pfUI.gui.bar = pfUI.gui:CreateConfigTab("ActionBar")
   pfUI.gui:CreateConfig(pfUI.gui.bar, "Icon Size", pfUI_config.bars, "icon_size")
   pfUI.gui:CreateConfig(pfUI.gui.bar, "Show actionbar backgrounds", pfUI_config.bars, "background", "checkbox")
-  pfUI.gui:CreateConfig(pfUI.gui.bar, "Use colored icon as range indicator", pfUI_config.bars, "glowrange", "checkbox")
-  pfUI.gui:CreateConfig(pfUI.gui.bar, "Range indicator Color", pfUI_config.bars, "rangecolor", "color")
   pfUI.gui:CreateConfig(pfUI.gui.bar, "Seconds to wait until hide bars", pfUI_config.bars, "hide_time")
   pfUI.gui:CreateConfig(pfUI.gui.bar, "Autohide bottom actionbar", pfUI_config.bars, "hide_bottom", "checkbox")
   pfUI.gui:CreateConfig(pfUI.gui.bar, "Autohide bottomleft actionbar", pfUI_config.bars, "hide_bottomleft", "checkbox")
@@ -776,7 +683,7 @@ pfUI:RegisterModule("gui", function ()
 
   -- panels
   pfUI.gui.panel = pfUI.gui:CreateConfigTab("Panel")
-  local values = { "time", "fps", "exp", "gold", "friends", "guild", "durability", "zone", "none" }
+  local values = { "time", "fps", "exp", "gold", "friends", "guild", "durability", "zone" }
   pfUI.gui:CreateConfig(pfUI.gui.panel, "Left Panel: Left", pfUI_config.panel.left, "left", "dropdown", values )
   pfUI.gui:CreateConfig(pfUI.gui.panel, "Left Panel: Center", pfUI_config.panel.left, "center", "dropdown", values)
   pfUI.gui:CreateConfig(pfUI.gui.panel, "Left Panel: Right", pfUI_config.panel.left, "right", "dropdown", values)
@@ -797,6 +704,7 @@ pfUI:RegisterModule("gui", function ()
   pfUI.gui:CreateConfig(pfUI.gui.castbar, "Hide pfUI player castbar:", pfUI_config.castbar.player, "hide_pfui", "checkbox")
   pfUI.gui:CreateConfig(pfUI.gui.castbar, "Hide pfUI target castbar:", pfUI_config.castbar.target, "hide_pfui", "checkbox")
 
+
   -- chat
   pfUI.gui.chat = pfUI.gui:CreateConfigTab("Chat")
   pfUI.gui:CreateConfig(pfUI.gui.chat, "Chat inputbox width:", pfUI_config.chat.text, "input_width")
@@ -804,24 +712,20 @@ pfUI:RegisterModule("gui", function ()
   pfUI.gui:CreateConfig(pfUI.gui.chat, "Timestamp in chat:", pfUI_config.chat.text, "time", "checkbox")
   pfUI.gui:CreateConfig(pfUI.gui.chat, "Timestamp format:", pfUI_config.chat.text, "timeformat")
   pfUI.gui:CreateConfig(pfUI.gui.chat, "Timestamp brackets:", pfUI_config.chat.text, "timebracket")
-  pfUI.gui:CreateConfig(pfUI.gui.chat, "Timestamp color:", pfUI_config.chat.text, "timecolor", "color")
-  pfUI.gui:CreateConfig(pfUI.gui.chat, "Left chat width:", pfUI_config.chat.left, "width")
+  pfUI.gui:CreateConfig(pfUI.gui.chat, "Timestamp color:", pfUI_config.chat.text, "timecolor")
   pfUI.gui:CreateConfig(pfUI.gui.chat, "Left chat height:", pfUI_config.chat.left, "height")
-  pfUI.gui:CreateConfig(pfUI.gui.chat, "Right chat width:", pfUI_config.chat.right, "width")
   pfUI.gui:CreateConfig(pfUI.gui.chat, "Right chat height:", pfUI_config.chat.right, "height")
+
   pfUI.gui:CreateConfig(pfUI.gui.chat, "Use custom background:", pfUI_config.chat.global, "custombg", "checkbox")
-  pfUI.gui:CreateConfig(pfUI.gui.chat, "Background color:", pfUI_config.chat.global, "background", "color")
+  pfUI.gui:CreateConfig(pfUI.gui.chat, "Background color:", pfUI_config.chat.global, "bgcolor")
+  pfUI.gui:CreateConfig(pfUI.gui.chat, "Background transparency:", pfUI_config.chat.global, "bgtransp")
 
   -- nameplates
   pfUI.gui.nameplates = pfUI.gui:CreateConfigTab("Nameplates")
   pfUI.gui:CreateConfig(pfUI.gui.nameplates, "Show castbars:", pfUI_config.nameplates, "showcastbar", "checkbox")
-  pfUI.gui:CreateConfig(pfUI.gui.nameplates, "Show spellname:", pfUI_config.nameplates, "spellname", "checkbox")
   pfUI.gui:CreateConfig(pfUI.gui.nameplates, "Show debuffs:", pfUI_config.nameplates, "showdebuffs", "checkbox")
   pfUI.gui:CreateConfig(pfUI.gui.nameplates, "Enable Clickthrough:", pfUI_config.nameplates, "clickthrough", "checkbox")
   pfUI.gui:CreateConfig(pfUI.gui.nameplates, "Raidicon size:", pfUI_config.nameplates, "raidiconsize")
-  pfUI.gui:CreateConfig(pfUI.gui.nameplates, "Show Players only:", pfUI_config.nameplates, "players", "checkbox")
-  pfUI.gui:CreateConfig(pfUI.gui.nameplates, "Show Healthpoints:", pfUI_config.nameplates, "showhp", "checkbox")
-  pfUI.gui:CreateConfig(pfUI.gui.nameplates, "Vertical position:", pfUI_config.nameplates, "vpos")
 
   -- thirdparty
   pfUI.gui.thirdparty = pfUI.gui:CreateConfigTab("Thirdparty")

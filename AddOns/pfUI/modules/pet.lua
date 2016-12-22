@@ -8,9 +8,7 @@ pfUI:RegisterModule("pet", function ()
   end
 
   pfUI.uf.pet = CreateFrame("Button","pfPet",UIParent)
-  pfUI.uf.pet.label = "pet"
-  pfUI.uf.pet.id = ""
-  pfUI.uf.pet:SetFrameStrata("LOW")
+
   pfUI.uf.pet:SetWidth(100)
   pfUI.uf.pet:SetHeight(20 + 2*default_border + pfUI_config.unitframes.pet.pspace)
   pfUI.uf.pet:ClearAllPoints()
@@ -18,16 +16,6 @@ pfUI:RegisterModule("pet", function ()
   pfUI.utils:UpdateMovable(pfUI.uf.pet)
 
   pfUI.uf.pet:RegisterForClicks('LeftButtonUp', 'RightButtonUp')
-  pfUI.uf.pet:SetScript("OnEnter", function()
-    GameTooltip_SetDefaultAnchor(GameTooltip, this)
-    GameTooltip:SetUnit(this.label .. this.id)
-    GameTooltip:Show()
-  end)
-
-  pfUI.uf.pet:SetScript("OnLeave", function()
-    GameTooltip:FadeOut()
-  end)
-
   pfUI.uf.pet:SetScript("OnClick", function ()
       TargetUnit("pet")
     end)
@@ -74,7 +62,6 @@ pfUI:RegisterModule("pet", function ()
       local power, powermax = UnitMana("pet"), UnitManaMax("pet")
 
       local happiness = GetPetHappiness()
-      local color = .2, .2, .2
       if happiness == 1 then
         color = { r = 1, g = 0, b = 0 }
       elseif happiness == 2 then
@@ -82,26 +69,11 @@ pfUI:RegisterModule("pet", function ()
       else
         color = { r = 0, g = 1, b = 0 }
       end
-
-      local r, g, b = .2, .2, .2
-      if pfUI_config.unitframes.dark == "1" and color then
-        pfUI.uf.pet.hp.bar:SetStatusBarColor(r, g, b, hp / hpmax / 4 + .75)
-        if pfUI_config.unitframes.pastel == "1" then
-          r, g, b = (color.r + .5) * .5, (color.g + .5) * .5, (color.b + .5) * .5
-        else
-          r, g, b = color.r, color.g, color.b
-        end
-      elseif color then
-        if pfUI_config.unitframes.pastel == "1" then
-          r, g, b = (color.r + .5) * .5, (color.g + .5) * .5, (color.b + .5) * .5
-        else
-          r, g, b = color.r, color.g, color.b
-        end
-        pfUI.uf.pet.hp.bar:SetStatusBarColor(r, g, b, hp / hpmax / 4 + .75)
-      end
-      pfUI.uf.pet.hp.text:SetTextColor(r, g, b)
+      local r, g, b = (color.r + .5) * .5, (color.g + .5) * .5, (color.b + .5) * .5
 
       pfUI.uf.pet.hp.bar:SetMinMaxValues(0, hpmax)
+      pfUI.uf.pet.hp.bar:SetStatusBarColor(r, g, b, hp / hpmax / 4 + .75)
+      pfUI.uf.pet.hp.text:SetTextColor(r+.3,g+.3,b+.3, 1)
       pfUI.uf.pet.hp.text:SetText(UnitName("pet"))
 
       pfUI.uf.pet.hpReal = hp
@@ -170,7 +142,7 @@ pfUI:RegisterModule("pet", function ()
   pfUI.uf.pet.power.bar:SetMinMaxValues(0, 100)
 
   pfUI.uf.pet.hp.text = pfUI.uf.pet.hp.bar:CreateFontString("Status", "LOW", "GameFontNormal")
-  pfUI.uf.pet.hp.text:SetFont(pfUI.font_square, pfUI_config.global.font_size - 2, "OUTLINE")
+  pfUI.uf.pet.hp.text:SetFont("Interface\\AddOns\\pfUI\\fonts\\" .. pfUI_config.global.font_square .. ".ttf", pfUI_config.global.font_size - 2, "OUTLINE")
   pfUI.uf.pet.hp.text:ClearAllPoints()
   pfUI.uf.pet.hp.text:SetAllPoints(pfUI.uf.pet.hp.bar)
   pfUI.uf.pet.hp.text:SetPoint("CENTER", 0, 0)
@@ -196,7 +168,7 @@ pfUI:RegisterModule("pet", function ()
 
     pfUI.uf.pet.buff.buffs[i] = CreateFrame("Button", "pfUITargetBuff" .. i, pfUI.uf.pet)
     pfUI.uf.pet.buff.buffs[i].stacks = pfUI.uf.pet.buff.buffs[i]:CreateFontString(nil, "OVERLAY", pfUI.uf.pet.buff.buffs[i])
-    pfUI.uf.pet.buff.buffs[i].stacks:SetFont(pfUI.font_square, pfUI_config.global.font_size, "OUTLINE")
+    pfUI.uf.pet.buff.buffs[i].stacks:SetFont("Interface\\AddOns\\pfUI\\fonts\\" .. pfUI_config.global.font_square .. ".ttf", pfUI_config.global.font_size, "OUTLINE")
     pfUI.uf.pet.buff.buffs[i].stacks:SetPoint("BOTTOMRIGHT", pfUI.uf.pet.buff.buffs[i], 2, -2)
     pfUI.uf.pet.buff.buffs[i].stacks:SetJustifyH("LEFT")
     pfUI.uf.pet.buff.buffs[i].stacks:SetShadowColor(0, 0, 0)
@@ -259,7 +231,7 @@ pfUI:RegisterModule("pet", function ()
 
     pfUI.uf.pet.debuff.debuffs[i] = CreateFrame("Button", "pfUITargetDebuff" .. i, pfUI.uf.pet)
     pfUI.uf.pet.debuff.debuffs[i].stacks = pfUI.uf.pet.debuff.debuffs[i]:CreateFontString(nil, "OVERLAY", pfUI.uf.pet.debuff.debuffs[i])
-    pfUI.uf.pet.debuff.debuffs[i].stacks:SetFont(pfUI.font_square, pfUI_config.global.font_size, "OUTLINE")
+    pfUI.uf.pet.debuff.debuffs[i].stacks:SetFont("Interface\\AddOns\\pfUI\\fonts\\" .. pfUI_config.global.font_square .. ".ttf", pfUI_config.global.font_size, "OUTLINE")
     pfUI.uf.pet.debuff.debuffs[i].stacks:SetPoint("BOTTOMRIGHT", pfUI.uf.pet.debuff.debuffs[i], 2, -2)
     pfUI.uf.pet.debuff.debuffs[i].stacks:SetJustifyH("LEFT")
     pfUI.uf.pet.debuff.debuffs[i].stacks:SetShadowColor(0, 0, 0)

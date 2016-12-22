@@ -29,7 +29,6 @@ pfUI.movables = {}
 
 pfLocaleClass = {}
 pfLocaleBagtypes = {}
-pfLocaleInvtypes = {}
 pfLocaleShift = {}
 pfLocaleSpells = {}
 pfLocaleSpellEvents = {}
@@ -140,11 +139,6 @@ function pfUI.utils:CreateBackdrop(f, inset, legacy, transp)
     return
   end
 
-  -- increase clickable area if available
-  if f.SetHitRectInsets then
-    f:SetHitRectInsets(-border,-border,-border,-border)
-  end
-
   -- use new backdrop behaviour
   if not f.backdrop then
     f:SetBackdrop(nil)
@@ -183,6 +177,8 @@ ScriptErrors:SetScript("OnShow", function(msg)
     ScriptErrors:Hide()
   end)
 
+pfUI.uf = CreateFrame("Frame",nil,UIParent)
+
 pfUI.info = CreateFrame("Button", "pfInfoBox", UIParent)
 pfUI.info:Hide()
 
@@ -204,7 +200,7 @@ function pfUI.info:ShowInfoBox(text, time, parent, height)
   pfUI.info:ClearAllPoints()
   pfUI.info.text:SetAllPoints(pfUI.info)
   pfUI.info.text:SetText(text)
-  pfUI.info.text:SetFont(pfUI.font_default, 14, "OUTLINE")
+  pfUI.info.text:SetFont("Interface\\AddOns\\pfUI\\fonts\\" .. pfUI_config.global.font_default .. ".ttf", 14, "OUTLINE")
 
   pfUI.info:SetWidth(pfUI.info.text:GetStringWidth() + 50)
   pfUI.info:SetHeight(height)

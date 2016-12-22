@@ -195,7 +195,7 @@ local _command_list;
 local _last_swing;
 local _ratio;
 
-local _default_width = 200;
+local _default_width = 258.73;
 local _default_height = 5;
 
 ----------------------------------------------------------------

@@ -5,7 +5,7 @@ pfUI:RegisterModule("cooldown", function ()
     cooldown.cd:SetFrameLevel(cooldown.cd:GetFrameLevel() + 1)
 
     cooldown.cd.text = cooldown.cd:CreateFontString("pfCooldownFrameText", "OVERLAY")
-    cooldown.cd.text:SetFont(pfUI.font_square, pfUI_config.global.font_size, "OUTLINE")
+    cooldown.cd.text:SetFont("Interface\\AddOns\\pfUI\\fonts\\" .. pfUI_config.global.font_square .. ".ttf", pfUI_config.global.font_size, "OUTLINE")
     cooldown.cd.text:SetPoint("CENTER", cooldown.cd, "CENTER", 0, 1)
 
     cooldown.cd:SetScript("OnUpdate", function()
@@ -14,31 +14,26 @@ pfUI:RegisterModule("cooldown", function ()
       if this.next > GetTime() then return end
       this.next = GetTime() + .1
 
-      -- fix own alpha value (should be inherited, but isn't)
-      this:SetAlpha(this:GetParent():GetAlpha())
-
       local remaining = this.duration - (GetTime() - this.start)
       if remaining >= 0 then
-        local r, g, b, a = 1, 1, 1, 1
         local unit = ""
         local color = "|cffffffff"
         if remaining > 99 then
           remaining = remaining / 60
           unit = "m"
-          r,g,b,a = strsplit(",", pfUI_config.appearance.cd.mincolor)
+          color = "|cff" .. pfUI_config.appearance.cd.mincolor
         end
         if remaining > 99 then
           remaining = remaining / 60
           unit = "h"
-          r,g,b,a = strsplit(",", pfUI_config.appearance.cd.hourcolor)
+          color = "|cff" ..  pfUI_config.appearance.cd.hourcolor
         end
         if remaining > 99 then
           remaining = remaining / 24
           unit = "d"
-          r,g,b,a = strsplit(",", pfUI_config.appearance.cd.daycolor)
+          color = "|cff" .. pfUI_config.appearance.cd.daycolor
         end
-        this.text:SetText(round(remaining) .. unit)
-        this.text:SetTextColor(r,g,b,a)
+        this.text:SetText(color .. round(remaining) .. unit)
       else
         this:Hide()
       end

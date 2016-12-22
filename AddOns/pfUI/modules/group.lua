@@ -38,7 +38,7 @@ pfUI:RegisterModule("group", function ()
         return
       end
 
-      if event == "RAID_TARGET_UPDATE" or event == "PLAYER_ENTERING_WORLD" or event == "PARTY_MEMBERS_CHANGED" then
+      if event == "RAID_TARGET_UPDATE" or event == "PLAYER_ENTERING_WORLD" then
         local raidIcon = GetRaidTargetIndex("party" .. i)
         if raidIcon then
           SetRaidTargetIconTexture(pfUI.uf.group[i].hp.raidIcon.texture, raidIcon)
@@ -48,7 +48,7 @@ pfUI:RegisterModule("group", function ()
         end
       end
 
-      if event == "PARTY_LEADER_CHANGED" or event == "PLAYER_ENTERING_WORLD" or event == "PARTY_MEMBERS_CHANGED" then
+      if event == "PARTY_LEADER_CHANGED" or event == "PLAYER_ENTERING_WORLD" then
         if UnitIsPartyLeader("party"..i) then
           pfUI.uf.group[i].hp.leaderIcon:Show()
         else
@@ -56,7 +56,7 @@ pfUI:RegisterModule("group", function ()
         end
       end
 
-      if event == "PARTY_LOOT_METHOD_CHANGED" or event == "PLAYER_ENTERING_WORLD" or event == "PARTY_MEMBERS_CHANGED" then
+      if event == "PARTY_LOOT_METHOD_CHANGED" or event == "PLAYER_ENTERING_WORLD" then
         local _, lootmaster = GetLootMethod()
         if lootmaster and pfUI.uf.group[i].id == lootmaster then
           pfUI.uf.group[i].hp.lootIcon:Show()
@@ -89,8 +89,6 @@ pfUI:RegisterModule("group", function ()
     pfUI.utils:UpdateMovable(pfUI.uf.group[i])
     pfUI.uf.group[i]:Hide()
     pfUI.uf.group[i].id = i
-    pfUI.uf.group[i].label = "party"
-
 
     pfUI.uf.group[i].hp = CreateFrame("Frame",nil, pfUI.uf.group[i])
     pfUI.uf.group[i].hp:SetWidth(175)
@@ -115,7 +113,7 @@ pfUI:RegisterModule("group", function ()
     pfUI.uf.group[i].power.bar:SetMinMaxValues(0, 100)
 
     pfUI.uf.group[i].caption = pfUI.uf.group[i]:CreateFontString("Status", "HIGH", "GameFontNormal")
-    pfUI.uf.group[i].caption:SetFont(pfUI.font_square, pfUI_config.global.font_size, "OUTLINE")
+    pfUI.uf.group[i].caption:SetFont("Interface\\AddOns\\pfUI\\fonts\\" .. pfUI_config.global.font_square .. ".ttf", pfUI_config.global.font_size, "OUTLINE")
     pfUI.uf.group[i].caption:ClearAllPoints()
     pfUI.uf.group[i].caption:SetParent(pfUI.uf.group[i].hp.bar)
     pfUI.uf.group[i].caption:SetPoint("LEFT",pfUI.uf.group[i].hp.bar, "LEFT", 10, 0)
@@ -151,6 +149,90 @@ pfUI:RegisterModule("group", function ()
 
     pfUI.uf.group[i]:RegisterForClicks('LeftButtonUp', 'RightButtonUp')
 
-    pfUI.uf:CreateUnit(pfUI.uf.group[i])
+    pfUI.uf.group[i]:SetScript("OnEnter", function()
+      GameTooltip_SetDefaultAnchor(GameTooltip, this)
+      GameTooltip:SetUnit("party" .. this.id)
+      GameTooltip:Show()
+    end)
+
+    pfUI.uf.group[i]:SetScript("OnLeave", function()
+      GameTooltip:FadeOut()
+    end)
+
+    pfUI.uf.group[i]:SetScript("OnClick", function ()
+      if ( SpellIsTargeting() and arg1 == "RightButton" ) then
+        SpellStopTargeting()
+        return
+      end
+
+      if ( arg1 == "LeftButton" ) then
+        if ( SpellIsTargeting() ) then
+          SpellTargetUnit("party" .. this.id)
+        elseif ( CursorHasItem() ) then
+          DropItemOnUnit("party" .. this.id)
+        else
+          TargetUnit("party" .. this.id)
+        end
+      else
+        local x, y = GetCursorPosition()
+        ToggleDropDownMenu(1, nil, getglobal("PartyMemberFrame" .. this.id .. "DropDown"), "cursor")
+      end
+    end)
+
+    pfUI.uf.group[i]:SetScript("OnUpdate", function ()
+      if CheckInteractDistance("party" .. this.id, 4) or not UnitName("party" .. this.id) then
+        this:SetAlpha(1)
+      else
+        this:SetAlpha(.5)
+      end
+
+      if UnitIsConnected("party" .. this.id) then
+        this.hp.bar:SetMinMaxValues(0, UnitHealthMax("party"..this.id))
+        this.power.bar:SetMinMaxValues(0, UnitManaMax("party"..this.id))
+
+        local hpDisplay = this.hp.bar:GetValue()
+        local hpReal = UnitHealth("party"..this.id)
+        local hpDiff = abs(hpReal - hpDisplay)
+
+        if hpDisplay < hpReal then
+          this.hp.bar:SetValue(hpDisplay + ceil(hpDiff / pfUI_config.unitframes.animation_speed))
+        elseif hpDisplay > hpReal then
+          this.hp.bar:SetValue(hpDisplay - ceil(hpDiff / pfUI_config.unitframes.animation_speed))
+        end
+
+        local powerDisplay = this.power.bar:GetValue()
+        local powerReal = UnitMana("party"..this.id)
+        local powerDiff = abs(powerReal - powerDisplay)
+
+        if powerDisplay < powerReal then
+          this.power.bar:SetValue(powerDisplay + ceil(powerDiff / pfUI_config.unitframes.animation_speed))
+        elseif powerDisplay > powerReal then
+          this.power.bar:SetValue(powerDisplay - ceil(powerDiff / pfUI_config.unitframes.animation_speed))
+        end
+
+        _, class = UnitClass("party"..this.id)
+        local c = RAID_CLASS_COLORS[class]
+        local cr, cg, cb = 0, 0, 0
+        if c then cr, cg, cb =(c.r + .5) * .5, (c.g + .5) * .5, (c.b + .5) * .5 end
+
+        this.hp.bar:SetStatusBarColor(cr, cg, cb)
+
+        local pcolor = ManaBarColor[UnitPowerType("party"..this.id)]
+        this.power.bar:SetStatusBarColor(pcolor.r + .5, pcolor.g +.5, pcolor.b +.5, 1)
+
+        this.caption:SetText(UnitName("party"..this.id))
+
+      else
+        this.hp.bar:SetMinMaxValues(0, 100)
+        this.power.bar:SetMinMaxValues(0, 100)
+        this.hp.bar:SetValue(0)
+        this.power.bar:SetValue(0)
+        local name = UnitName("party"..this.id)
+        if name then
+          this.caption:SetText("[OFF]" .. name)
+        end
+      end
+    end)
   end
+
 end)

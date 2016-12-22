@@ -17,66 +17,16 @@ pfUI:RegisterModule("targettarget", function ()
     end)
 
   pfUI.uf.targettarget = CreateFrame("Button","pfTargetTarget",UIParent)
-  pfUI.uf.targettarget.label = "targettarget"
-  pfUI.uf.targettarget.id = ""
-  pfUI.uf.targettarget:SetFrameStrata("LOW")
+
   pfUI.uf.targettarget:SetWidth(100)
   pfUI.uf.targettarget:SetHeight(20 + 2*default_border + pfUI_config.unitframes.ttarget.pspace)
   pfUI.uf.targettarget:SetPoint("BOTTOM", UIParent , "BOTTOM", 0, 125)
   pfUI.utils:UpdateMovable(pfUI.uf.targettarget)
 
   pfUI.uf.targettarget:RegisterForClicks('LeftButtonUp', 'RightButtonUp')
-  pfUI.uf.targettarget:SetScript("OnEnter", function()
-    GameTooltip_SetDefaultAnchor(GameTooltip, this)
-    GameTooltip:SetUnit(this.label .. this.id)
-    GameTooltip:Show()
-  end)
-
-  pfUI.uf.targettarget:SetScript("OnLeave", function()
-    GameTooltip:FadeOut()
-  end)
   pfUI.uf.targettarget:SetScript("OnClick", function ()
-    TargetUnit("targettarget")
-
-    if pfUI_config.unitframes.globalclick == "0" then return end
-
-    -- clickcast: shift modifier
-    if IsShiftKeyDown() then
-      if pfUI_config.unitframes.raid.clickcast_shift ~= "" then
-        CastSpellByName(pfUI_config.unitframes.raid.clickcast_shift)
-        pfUI.uf.target.noanim = "yes"
-        TargetLastTarget()
-        return
-      end
-    -- clickcast: alt modifier
-    elseif IsAltKeyDown() then
-      if pfUI_config.unitframes.raid.clickcast_alt ~= "" then
-        CastSpellByName(pfUI_config.unitframes.raid.clickcast_alt)
-        pfUI.uf.target.noanim = "yes"
-        TargetLastTarget()
-        return
-      end
-    -- clickcast: ctrl modifier
-    elseif IsControlKeyDown() then
-      if pfUI_config.unitframes.raid.clickcast_ctrl ~= "" then
-        CastSpellByName(pfUI_config.unitframes.raid.clickcast_ctrl)
-        pfUI.uf.target.noanim = "yes"
-        TargetLastTarget()
-        return
-      end
-    -- clickcast: default
-    else
-      if pfUI_config.unitframes.raid.clickcast ~= "" then
-        CastSpellByName(pfUI_config.unitframes.raid.clickcast)
-        pfUI.uf.target.noanim = "yes"
-        TargetLastTarget()
-        return
-      else
-        -- no clickcast: default action
-        TargetUnit("targettarget")
-      end
-    end
-  end)
+      TargetUnit("targettarget")
+    end)
 
   pfUI.uf.targettarget:SetScript("OnUpdate", function()
       if UnitExists("targettarget") then
@@ -108,24 +58,9 @@ pfUI:RegisterModule("targettarget", function ()
       pfUI.uf.targettarget.hp.bar:SetMinMaxValues(0, UnitHealthMax("targettarget"))
 
       if color then
-        local r, g, b = .2, .2, .2
-        if pfUI_config.unitframes.dark == "1" then
-          pfUI.uf.targettarget.hp.bar:SetStatusBarColor(r, g, b, UnitHealth("targettarget") / UnitHealthMax("targettarget") / 4 + .75)
-          if pfUI_config.unitframes.pastel == "1" then
-            r, g, b = (color.r + .5) * .5, (color.g + .5) * .5, (color.b + .5) * .5
-          else
-            r, g, b = color.r, color.g, color.b
-          end
-        else
-          if pfUI_config.unitframes.pastel == "1" then
-            r, g, b = (color.r + .5) * .5, (color.g + .5) * .5, (color.b + .5) * .5
-          else
-            r, g, b = color.r, color.g, color.b
-          end
-          pfUI.uf.targettarget.hp.bar:SetStatusBarColor(r, g, b, UnitHealth("targettarget") / UnitHealthMax("targettarget") / 4 + .75)
-        end
-
-        pfUI.uf.targettarget.hp.text:SetTextColor(r, g, b, 1)
+        local r, g, b = (color.r + .5) * .5, (color.g + .5) * .5, (color.b + .5) * .5
+        pfUI.uf.targettarget.hp.bar:SetStatusBarColor(r, g, b, UnitHealth("targettarget") / UnitHealthMax("targettarget") / 4 + .75)
+        pfUI.uf.targettarget.hp.text:SetTextColor(r+.3,g+.3,b+.3, 1)
       end
       pfUI.uf.targettarget.hp.text:SetText( UnitName("targettarget"))
 
@@ -151,8 +86,6 @@ pfUI:RegisterModule("targettarget", function ()
         pfUI.uf.targettarget.power.bar:SetValue(display + ceil(diff / pfUI_config.unitframes.animation_speed))
       elseif display > real then
         pfUI.uf.targettarget.power.bar:SetValue(display - ceil(diff / pfUI_config.unitframes.animation_speed))
-      else
-        pfUI.uf.targettarget.power.bar:SetValue(real)
       end
     end)
 
@@ -208,7 +141,7 @@ pfUI:RegisterModule("targettarget", function ()
   pfUI.uf.targettarget.power.bar:SetMinMaxValues(0, 100)
 
   pfUI.uf.targettarget.hp.text = pfUI.uf.targettarget.hp.bar:CreateFontString("Status", "LOW", "GameFontNormal")
-  pfUI.uf.targettarget.hp.text:SetFont(pfUI.font_square, pfUI_config.global.font_size - 2, "OUTLINE")
+  pfUI.uf.targettarget.hp.text:SetFont("Interface\\AddOns\\pfUI\\fonts\\" .. pfUI_config.global.font_square .. ".ttf", pfUI_config.global.font_size - 2, "OUTLINE")
   pfUI.uf.targettarget.hp.text:ClearAllPoints()
   pfUI.uf.targettarget.hp.text:SetAllPoints(pfUI.uf.targettarget.hp.bar)
   pfUI.uf.targettarget.hp.text:SetPoint("CENTER", 0, 0)

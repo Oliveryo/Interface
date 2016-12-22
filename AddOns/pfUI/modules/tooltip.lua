@@ -1,5 +1,5 @@
 pfUI:RegisterModule("tooltip", function ()
-pfUI.utils:CreateBackdrop(GameTooltip)
+pfUI.utils:CreateBackdrop(  GameTooltip)
 
   if pfUI_config.tooltip.position == "cursor" then
     function GameTooltip_SetDefaultAnchor(tooltip, parent)
@@ -42,15 +42,9 @@ pfUI.utils:CreateBackdrop(GameTooltip)
       if GameTooltip:GetAnchorType() == "ANCHOR_NONE" then
         GameTooltip:ClearAllPoints()
         if pfUI_config.tooltip.position == "bottom" then
-          if pfUI.panel then
-            GameTooltip:SetPoint("BOTTOMRIGHT", pfUI.panel.right, "TOPRIGHT", 0, pfUI_config.appearance.border.default*2)
-          else
-            GameTooltip:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOMRIGHT", 0, -pfUI_config.appearance.border.default*2)
-          end
+          GameTooltip:SetPoint("BOTTOMRIGHT",pfUI.panel.right,"TOPRIGHT",0,pfUI_config.appearance.border.default*2)
         elseif pfUI_config.tooltip.position == "chat" then
-          local anchor = ChatFrame3
-          if pfUI.chat then anchor = pfUI.chat.right end
-          GameTooltip:SetPoint("BOTTOMRIGHT", anchor, "TOPRIGHT", 0, pfUI_config.appearance.border.default*2)
+          GameTooltip:SetPoint("BOTTOMRIGHT",pfUI.chat.right,"TOPRIGHT",0,pfUI_config.appearance.border.default*2)
         end
       end
     end)
@@ -128,7 +122,7 @@ pfUI.utils:CreateBackdrop(GameTooltip)
         pfUI.tooltipStatusBar.HP:SetPoint("TOP", 0,8)
         pfUI.tooltipStatusBar.HP:SetNonSpaceWrap(false)
         pfUI.tooltipStatusBar.HP:SetFontObject(GameFontWhite)
-        pfUI.tooltipStatusBar.HP:SetFont(pfUI.font_default, pfUI_config.global.font_size + 2, "OUTLINE")
+        pfUI.tooltipStatusBar.HP:SetFont("Interface\\AddOns\\pfUI\\fonts\\" .. pfUI_config.global.font_default .. ".ttf", pfUI_config.global.font_size + 2, "OUTLINE")
       end
 
       if hp and hpm then

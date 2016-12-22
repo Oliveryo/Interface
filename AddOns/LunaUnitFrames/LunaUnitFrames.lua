@@ -2,7 +2,7 @@ LunaUF = AceLibrary("AceAddon-2.0"):new("AceEvent-2.0", "AceConsole-2.0", "AceDB
 LunaUF:RegisterDB("LunaDB")
 
 -- Assets ----------------------------------------------------------------------------------
-LunaUF.Version = 2120
+LunaUF.Version = 2100
 LunaUF.BS = AceLibrary("Babble-Spell-2.2")
 LunaUF.Banzai = AceLibrary("Banzai-1.0")
 LunaUF.HealComm = AceLibrary("HealComm-1.0")
@@ -19,15 +19,15 @@ LunaUF.AllianceCheck = {
 	["NightElf"] = true,
 }
 
-function LunaUF:deepcopy(orig)
+local function deepcopy(orig)
     local orig_type = type(orig)
     local copy
     if orig_type == 'table' then
         copy = {}
         for orig_key, orig_value in next, orig, nil do
-            copy[LunaUF:deepcopy(orig_key)] = LunaUF:deepcopy(orig_value)
+            copy[deepcopy(orig_key)] = deepcopy(orig_value)
         end
-        setmetatable(copy, LunaUF:deepcopy(getmetatable(orig)))
+        setmetatable(copy, deepcopy(getmetatable(orig)))
     else -- number, string, boolean, etc
         copy = orig
     end
@@ -99,6 +99,7 @@ LunaUF.name = "LunaUnitFrames"
 LunaUF.hasNoColor = true
 LunaUF.hasIcon = "Interface\\AddOns\\LunaUnitFrames\\media\\textures\\icon"
 LunaUF.defaultMinimapPosition = 180
+LunaUF.independentProfile = true
 LunaUF.cannotDetachTooltip = true
 LunaUF.hideWithoutStandby = true
 
@@ -453,9 +454,9 @@ function LunaUF:InitBarorder()
 	for key,unitGroup in pairs(LunaUF.db.profile.units) do
 		if not unitGroup.barorder then
 			if LunaUF.constants.specialbarorder[key] then
-				unitGroup.barorder = LunaUF:deepcopy(LunaUF.constants.specialbarorder[key])
+				unitGroup.barorder = deepcopy(LunaUF.constants.specialbarorder[key])
 			else
-				unitGroup.barorder = LunaUF:deepcopy(LunaUF.constants.barorder)
+				unitGroup.barorder = deepcopy(LunaUF.constants.barorder)
 			end
 		elseif key == "player" and (getn(unitGroup.barorder.horizontal) + getn(unitGroup.barorder.vertical)) < 8 then
 			tinsert(unitGroup.barorder.horizontal, "reckStacks")

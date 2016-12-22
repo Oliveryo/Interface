@@ -46,8 +46,6 @@ local function Hex(r, g, b)
 end
 
 local function feigncheck(unit)
-	local _,class = UnitClass(unit)
-	if class ~= "HUNTER" then return end
 	for i=1,32 do
 		if not UnitBuff(unit,i) then
 			return
@@ -83,34 +81,6 @@ local defaultTags = {
 										end
 									end
 									return tostring(count)
-								end
-							end;
-	["cnumtargeting"]		= function(unit)
-								local count = 0
-								if UnitInRaid("player") then
-									for i = 1, GetNumRaidMembers() do
-										if UnitIsUnit(unit, ("raid"..i.."target")) then
-											count = count + 1
-										end
-									end
-								else
-									if UnitIsUnit(unit, "target") then
-										count = 1
-									else
-										count = 0
-									end
-									for i=1, GetNumPartyMembers() do
-										if UnitIsUnit(unit, ("party"..i.."target")) then
-											count = count + 1
-										end
-									end
-								end
-								if count == 0 then
-									return Hex(1,0.5,0.5)..count..Hex(1,1,1)
-								elseif (count > 5) then
-									return Hex(0.5,1,0.5)..count..Hex(1,1,1)
-								else
-									return Hex(0.5,0.5,1)..count..Hex(1,1,1)
 								end
 							end;
 	["happiness"]			= function(unit)
@@ -218,7 +188,6 @@ local defaultTags = {
 									return ""
 								end
 							end;
-	["numheals"]			= function(unit) return HealComm:getNumHeals(UnitName(unit)) end;
 	["pvp"]					= function(unit) return UnitIsPVP(unit) and "PVP" or "" end;
 	["smarthealth"]			= function(unit)
 								local hp
@@ -715,8 +684,8 @@ local defaultTags = {
 								return Hex(eR * inverseModifier + sR * modifier, eG * inverseModifier + sG * modifier, eB * inverseModifier + sB * modifier)
 							end;
 	["color"]				= function(color)
-								if color and strlen(color) == 6 then
-									return ("|cff"..color.."|h")
+								if color then
+									return ("|cff"..color)
 								else
 									return L["#invalidTag#"]
 								end
@@ -740,13 +709,15 @@ function GetTagText(text,unit)
 	local result = text
 	startPos,endPos,tagtext = string.find(result,"%[([%w:]+)%]")
 	while tagtext do
-		if defaultTags[tagtext] then
-			result = StringInsert(result,startPos,endPos,defaultTags[tagtext](unit))
-		elseif string.find(tagtext,"color:(%x%x%x%x%x%x)") then
-			_,_,tagtext = string.find(tagtext,"color:(%x%x%x%x%x%x)")
+		if string.find(tagtext,"color:(%x%x%x%x%x%x)") then
+			startPos,endPos,tagtext = string.find(tagtext,"color:(%x%x%x%x%x%x)")
 			result = StringInsert(result,startPos,endPos,defaultTags["color"](tagtext))
 		else
-			result = StringInsert(result,startPos,endPos,L["#invalidTag#"])
+			if defaultTags[tagtext] then
+				result = StringInsert(result,startPos,endPos,defaultTags[tagtext](unit))
+			else
+				result = StringInsert(result,startPos,endPos,L["#invalidTag#"])
+			end
 		end
 		startPos,endPos,tagtext = string.find(result,"%[([%w:]+)%]")
 	end

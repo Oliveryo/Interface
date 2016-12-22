@@ -40,11 +40,7 @@ local function updateTimer()
 	local currentHealth = UnitHealth(frame.unit)
 	if( currentHealth == this.currentHealth ) then return end
 	this.currentHealth = currentHealth
-	if frame.isOffline or frame.isDead then
-		frame.healthBar:SetValue((frame.isOffline and UnitHealthMax(frame.unit)) or (frame.isDead and 0))
-	else
-		this:SetValue(currentHealth)
-	end
+	this:SetValue(currentHealth)
 
 	-- Update incoming heal number
 	if LunaUF.db.profile.units[frame.unitGroup].incheal.enabled and frame.incheal then
@@ -173,19 +169,16 @@ function Health:UpdateColor(frame)
 end
 
 function Health:Update(frame)
-	frame.isOffline = not UnitIsConnected(frame.unit)
-	frame.isDead = UnitIsDeadOrGhost(frame.unit) or (UnitHealth(frame.unit) == 1 and not UnitIsVisible(frame.unit))
+	local isOffline = not UnitIsConnected(frame.unit)
+	frame.isDead = UnitIsDeadOrGhost(frame.unit)
+	frame.healthBar.currentHealth = UnitHealth(frame.unit)
 	frame.healthBar:SetMinMaxValues(0, UnitHealthMax(frame.unit))
-	
-	if frame.isOffline or frame.isDead then
-		frame.healthBar:SetValue((frame.isOffline and UnitHealthMax(frame.unit)) or (frame.isDead and 0))
-	else
-		frame.healthBar:SetValue(UnitHealth(frame.unit))
-	end
+	frame.healthBar:SetValue(isOffline and UnitHealthMax(frame.unit) or frame.isDead and 0 or frame.healthBar.currentHealth)
 	
 	-- Unit is offline, fill bar up + grey it
-	if( frame.isOffline ) then
+	if( isOffline ) then
 		frame.healthBar.wasOffline = true
+		frame.unitIsOnline = nil
 		self:SetBarColor(frame.healthBar, LunaUF.db.profile.units[frame.unitGroup].healthBar.invert, LunaUF.db.profile.healthColors.offline.r, LunaUF.db.profile.healthColors.offline.g, LunaUF.db.profile.healthColors.offline.b)
 	-- The unit was offline, but they no longer are so we need to do a forced color update
 	elseif( frame.healthBar.wasOffline ) then

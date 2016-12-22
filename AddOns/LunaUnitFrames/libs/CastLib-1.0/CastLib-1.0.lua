@@ -8,25 +8,13 @@ Dependencies: AceLibrary, AceEvent-2.0
 ]]
 
 local MAJOR_VERSION = "CastLib-1.0"
-local MINOR_VERSION = "$Revision: 10020 $"
+local MINOR_VERSION = "$Revision: 10000 $"
 
 if not AceLibrary then error(MAJOR_VERSION .. " requires AceLibrary") end
 if not AceLibrary:IsNewVersion(MAJOR_VERSION, MINOR_VERSION) then return end
 if not AceLibrary:HasInstance("AceEvent-2.0") then error(MAJOR_VERSION .. " requires AceEvent-2.0") end
 
-local CastLib = {}
-local AimedShot
-local locale = GetLocale()
-
-if locale == "deDE" then
-	AimedShot = "Gezielter Schuss"
-elseif locale == "frFR" then
-	AimedShot = "Vis\195\169e"
-elseif locale == "zhCN" then
-	AimedShot = "瞄准射击"
-else
-	AimedShot = "Aimed Shot"
-end
+local CastLib = CreateFrame("Frame")
 
 ------------------------------------------------
 -- activate, enable, disable
@@ -44,11 +32,11 @@ end
 
 local function external(self, major, instance)
 	if major == "AceEvent-2.0" then
-		self.EventScheduler = instance
-		self.EventScheduler:embed(self)
+		CastLib.EventScheduler = instance
+		CastLib.EventScheduler:embed(self)
 		self:UnregisterAllEvents()
 		self:CancelAllScheduledEvents()
-		if self.EventScheduler:IsFullyInitialized() then
+		if CastLib.EventScheduler:IsFullyInitialized() then
 			self:AceEvent_FullyInitialized()
 		else
 			self:RegisterEvent("AceEvent_FullyInitialized", "AceEvent_FullyInitialized", true)
@@ -71,10 +59,10 @@ end
 
 function CastLib:AceEvent_FullyInitialized()
 	self:TriggerEvent("CastLib_Enabled")
-	self:RegisterEvent("SPELLCAST_START", "OnEvent")
-	self:RegisterEvent("SPELLCAST_INTERRUPTED", "OnEvent")
-	self:RegisterEvent("SPELLCAST_FAILED", "OnEvent")
-	self:RegisterEvent("SPELLCAST_STOP", "OnEvent")
+	self:RegisterEvent("SPELLCAST_START", CastLib.OnEvent)
+	self:RegisterEvent("SPELLCAST_INTERRUPTED", CastLib.OnEvent)
+	self:RegisterEvent("SPELLCAST_FAILED", CastLib.OnEvent)
+	self:RegisterEvent("SPELLCAST_STOP", CastLib.OnEvent)
 end
 
 ------------------------------------------------
@@ -92,29 +80,32 @@ local CastLib_isCasting
 local CastLibTip = CreateFrame("GameTooltip", "CastLibTip", nil, "GameTooltipTemplate")
 CastLibTip:SetOwner(WorldFrame, "ANCHOR_NONE")
 
-function CastLib:stopCast(SpellCast)
+function CastLib.stopCast(SpellCast)
 --	ChatFrame1:AddMessage(SpellCast[1].." ended after delay.")
 end
 
-function CastLib:instantCast(SpellCast)
---	ChatFrame1:AddMessage(SpellCast[1].." was instant.")
+function CastLib.instantCast(SpellCast)
+	if CastLib_SpellCast_backup[1] == "Tranquilizing Shot" then
+		--SendChatMessage("Tranq out!" ,"YELL" ,"COMMON")
+		--SendChatMessage("Tranq out!" ,"CHANNEL" ,"COMMON", GetChannelName("insomniahunters"))
+	end
 end
 
-function CastLib:OnEvent()
+CastLib.OnEvent = function()
 	if ( event == "SPELLCAST_START" ) then
 		if ( CastLib_SpellCast and CastLib_SpellCast[1] == arg1 ) then
-			if self.EventScheduler:IsEventScheduled("CastLib_CastInstant") then
-				self.EventScheduler:CancelScheduledEvent("CastLib_CastInstant")
+			if CastLib.EventScheduler:IsEventScheduled("CastLib_CastInstant") then
+				CastLib.EventScheduler:CancelScheduledEvent("CastLib_CastInstant")
 				
 			end
 			CastLib_SpellCast_backup = CastLib_SpellCast
-			CastLib_isCasting = true
+			CastLib_isCasting = 1
 --			ChatFrame1:AddMessage("Casting "..arg1)
---			self.EventScheduler:TriggerEvent("CASTLIB_STARTCAST", arg1)
+--			CastLib.EventScheduler:TriggerEvent("CASTLIB_STARTCAST", arg1)
 		end
 	elseif (event == "SPELLCAST_INTERRUPTED" or event == "SPELLCAST_FAILED") then
-		if self.EventScheduler:IsEventScheduled("CastLib_CastEnding") then
-			self.EventScheduler:CancelScheduledEvent("CastLib_CastEnding")
+		if CastLib.EventScheduler:IsEventScheduled("CastLib_CastEnding") then
+			CastLib.EventScheduler:CancelScheduledEvent("CastLib_CastEnding")
 --			ChatFrame1:AddMessage(CastLib_SpellCast_backup[1].." didn't finish.")
 		end
 		CastLib_isCasting = nil
@@ -123,15 +114,15 @@ function CastLib:OnEvent()
 		CastLib_Spell =  nil
 	elseif event == "SPELLCAST_STOP" and CastLib_SpellCast then
 		if not CastLib_isCasting and CastLib_SpellCast then
-			if self.EventScheduler:IsEventScheduled("CastLib_CastEnding") then
-				self.EventScheduler:CancelScheduledEvent("CastLib_CastEnding")
+			if CastLib.EventScheduler:IsEventScheduled("CastLib_CastEnding") then
+				CastLib.EventScheduler:CancelScheduledEvent("CastLib_CastEnding")
 --				ChatFrame1:AddMessage(CastLib_SpellCast_backup[1].." ended.")
 			end
-			self.EventScheduler:ScheduleEvent("CastLib_CastInstant", self.instantCast, 0.3, self, CastLib_SpellCast)
+			CastLib.EventScheduler:ScheduleEvent("CastLib_CastInstant", CastLib.instantCast, 0.3, CastLib_SpellCast)
 			CastLib_SpellCast_backup = CastLib_SpellCast
 		else
 			CastLib_isCasting = nil
-			self.EventScheduler:ScheduleEvent("CastLib_CastEnding", self.stopCast, 0.3, self, CastLib_SpellCast_backup)
+			CastLib.EventScheduler:ScheduleEvent("CastLib_CastEnding", CastLib.stopCast, 0.3, CastLib_SpellCast_backup)
 		end
 		CastLib_SpellCast =  nil
 		CastLib_Rank = nil
@@ -139,17 +130,10 @@ function CastLib:OnEvent()
 	end
 end
 
-function CastLib:GetSpell()
-	return CastLib_Spell or CastLib_SpellCast_backup[1], CastLib_Rank or CastLib_SpellCast_backup[2]
-end
-
 local CastLib_oldCastSpell = CastSpell
 function CastLib_newCastSpell(spellId, spellbookTabNum)
 	-- Call the original function so there's no delay while we process
 	CastLib_oldCastSpell(spellId, spellbookTabNum)
-	if CastLib_Spell then
-		return
-	end
 	local spellName, rank = GetSpellName(spellId, spellbookTabNum)
 	_,_,rank = string.find(rank,"(%d+)")
 	if ( SpellIsTargeting() ) then
@@ -172,9 +156,6 @@ local CastLib_oldCastSpellByName = CastSpellByName
 function CastLib_newCastSpellByName(spellName, onSelf)
 	-- Call the original function
 	CastLib_oldCastSpellByName(spellName, onSelf)
-	if CastLib_Spell then
-		return
-	end
 	local _,_,rank = string.find(spellName,"(%d+)")
 	local _, _, spellName = string.find(spellName, "^([^%(]+)")
 	if not rank then
@@ -232,21 +213,12 @@ local CastLib_oldUseAction = UseAction
 function CastLib_newUseAction(slot, checkCursor, onSelf)
 	CastLibTip:ClearLines()
 	CastLibTip:SetAction(slot)
-	-- Call the original function
-	CastLib_oldUseAction(slot, checkCursor, onSelf)
-	
-	CastLib_Slot = slot
-	if CastLib_Spell == AimedShot then
-		CastLib_ProcessSpellCast(CastLib_Spell, 6, UnitName("target"))
-		return
-	end
-	
-	if CastLib_Spell then
-		return
-	end
 	local spellName = CastLibTipTextLeft1:GetText()
 	CastLib_Spell = spellName
+	CastLib_Slot = slot
 	
+	-- Call the original function
+	CastLib_oldUseAction(slot, checkCursor, onSelf)
 	-- Test to see if this is a macro
 	if ( GetActionText(slot) or not CastLib_Spell ) then
 		return
@@ -313,16 +285,12 @@ end
 TargetUnit = CastLib_newTargetUnit
 
 function CastLib_ProcessSpellCast(spellName, rank, targetName)
-	if spellName == AimedShot then
-		CastLib_Spell = AimedShot
-		if not CastLib_isCasting and CastLib_Slot and IsCurrentAction(CastLib_Slot) then
-			CastLib_isCasting = true
-			local AceEvent = AceLibrary("AceEvent-2.0")
-			AceEvent:TriggerEvent("CASTLIB_STARTCAST", AimedShot)
-		end
+	if spellName == "Aimed Shot" and IsCurrentAction(CastLib_Slot) then
+		CastLib.EventScheduler:TriggerEvent("CASTLIB_STARTCAST", "Aimed Shot")
 	end
 	CastLib_SpellCast = { spellName, rank, targetName }
 end
 
+CastLib:SetScript("OnEvent", CastLib.OnEvent)
+
 AceLibrary:Register(CastLib, MAJOR_VERSION, MINOR_VERSION, activate, nil, external)
-CastLib = nil

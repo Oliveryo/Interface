@@ -161,8 +161,7 @@ local TotemDB = {
 local function OnEvent()
 	if SpellCast and TotemDB[SpellCast[1]] then
 		local totem = this.totems[TotemDB[SpellCast[1]]["type"]]
-		local dur = TotemDB[SpellCast[1]]["dur"]
-		dur = dur[tonumber(SpellCast[2])] or dur[1]
+		local dur = TotemDB[SpellCast[1]]["dur"][tonumber(SpellCast[2])]
 		totem.timer = dur + 0.5
 		totem:SetMinMaxValues(0,dur)
 		totem.active = true

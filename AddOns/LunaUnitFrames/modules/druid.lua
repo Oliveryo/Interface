@@ -11,9 +11,7 @@ local function OnUpdate()
 end
 
 local function OnEvent()
-	if UnitIsUnit("player", arg1) then
-		Druid:FullUpdate(LunaUF.Units.unitFrames.player)
-	end
+	Druid:FullUpdate(LunaUF.Units.unitFrames.player)
 end
 
 function Druid:OnEnable(frame)

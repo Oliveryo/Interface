@@ -23,30 +23,26 @@ local EnergyUpdate = function()
 	local powerType = UnitPowerType("player")
 	local frame = this:GetParent()
 	local time = GetTime()
-	local Position = 0
+	local Position
 	if powerType == 0 then
 		if timestamp then
 			if (time - timestamp) >= 5 then
 				timestamp = nil
 				this:Hide()
 			else
-				Position = ((time - timestamp) / 5)
+				Position = (((time - timestamp) / 5)* frame:GetWidth())
 			end
 		end
 	elseif powerType == 3 then
 		if (time - this.startTime) >= 2 then 		--Ticks happen every 2 sec
 			this.startTime = GetTime()
 		end
-		Position = ((time - this.startTime) / 2)
+		Position = (((time - this.startTime) / 2)* frame:GetWidth())
 	else
 		this:Hide()
 		return
 	end
-	if LunaUF.db.profile.units[frame:GetParent().unitGroup].powerBar.vertical then
-		this:SetPoint("CENTER", frame, "BOTTOM", 0, Position * frame:GetHeight())
-	else
-		this:SetPoint("CENTER", frame, "LEFT", Position * frame:GetWidth(), 0)
-	end
+	this:SetPoint("CENTER", frame, "LEFT", Position, 0)
 end
 
 local function OnEvent()
@@ -93,6 +89,7 @@ function Power:OnEnable(frame)
 			frame.powerBar.ticker.texture = frame.powerBar.ticker:CreateTexture(nil, "OVERLAY")
 			frame.powerBar.ticker.texture:SetAllPoints(frame.powerBar.ticker)
 			frame.powerBar.ticker.texture:SetTexture(1, 1, 1)
+			frame.powerBar.ticker:SetWidth(1)
 			frame.powerBar.ticker:SetPoint("CENTER", frame.powerBar, "CENTER")
 			frame.powerBar.ticker.startTime = GetTime()
 			playerFrame = frame
@@ -200,13 +197,7 @@ function Power:FullUpdate(frame)
 		end
 	end
 	if frame.powerBar.ticker then
-		if LunaUF.db.profile.units[frame.unitGroup].powerBar.vertical then
-			frame.powerBar.ticker:SetWidth(frame.powerBar:GetWidth()-3)
-			frame.powerBar.ticker:SetHeight(1)
-		else
-			frame.powerBar.ticker:SetHeight(frame.powerBar:GetHeight()-3)
-			frame.powerBar.ticker:SetWidth(1)
-		end
+		frame.powerBar.ticker:SetHeight(frame.powerBar:GetHeight()-3)
 	end
 	Power:Update(frame)
 	Power:UpdateColor(frame)

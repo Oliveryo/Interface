@@ -7,7 +7,7 @@ local Indicators = {
 		["masterLoot"] = {"Interface\\GroupFrame\\UI-Group-MasterLooter", "PARTY_LOOT_METHOD_CHANGED"},
 		["raidTarget"] = {"Interface\\TargetingFrame\\UI-RaidTargetingIcons", "RAID_TARGET_UPDATE"},
 		["happiness"] = {"Interface\\PetPaperDollFrame\\UI-PetHappiness", "UNIT_HAPPINESS"},
-		["ready"] = {"Interface\\AddOns\\LunaUnitFrames\\media\\textures\\ReadyCheck-Waiting"},
+		["ready"] = {"Interface\\AddOns\\LunaUnitFrames\\media\\textures\\ReadyCheck-Waiting", "CHAT_MSG_ADDON"},
 		["class"] = {"Interface\\Glues\\CharacterCreate\\UI-CharacterCreate-Classes"},
 		["rezz"] = {"Interface\\AddOns\\LunaUnitFrames\\media\\textures\\Raid-Icon-Rez"},
 		["pvprank"] = {"Interface\\PvPRankBadges\\PvPRank01", "PLAYER_PVP_RANK_CHANGED"},
@@ -17,8 +17,7 @@ local Indicators = {
 LunaUF:RegisterModule(Indicators, "indicators", LunaUF.L["Indicators"])
 local L = LunaUF.L
 local HealComm = LunaUF.HealComm
-local readychecking, afterreadycheck
-local numVoted = 0
+local readychecking
 local readycheck = {}
 local lootmaster	-- this value only updates in OnAceEvent
 
@@ -192,28 +191,20 @@ local function UpdateReady(enabled, indicator, unit)
 		indicator:Hide()
 	elseif not LunaUF.db.profile.locked then
 		indicator:Show()
-	elseif not readychecking and not afterreadycheck then
+	elseif not readychecking then
 		indicator:Hide()
 	else
 		local v = UnitName(unit)
 		if not v then
 			indicator:Hide()
-		elseif not afterreadycheck then
+		else
 			v = readycheck[v]
-			if v == 2 then
+			if v == 0 then
 				indicator:SetTexture("Interface\\AddOns\\LunaUnitFrames\\media\\textures\\ReadyCheck-NotReady")
 			elseif v == 1 then
 				indicator:SetTexture("Interface\\AddOns\\LunaUnitFrames\\media\\textures\\ReadyCheck-Ready")
 			else
 				indicator:SetTexture("Interface\\AddOns\\LunaUnitFrames\\media\\textures\\ReadyCheck-Waiting")
-			end
-			indicator:Show()
-		else
-			v = readycheck[v]
-			if v == 2 then
-				indicator:SetTexture("Interface\\AddOns\\LunaUnitFrames\\media\\textures\\ReadyCheck-NotReady")
-			else
-				indicator:SetTexture("Interface\\AddOns\\LunaUnitFrames\\media\\textures\\ReadyCheck-Ready")
 			end
 			indicator:Show()
 		end
@@ -249,37 +240,15 @@ local function UpdateClass(enabled, indicator, unit)
 	end
 end
 
-local function updateFramesReady()
-	for _,frame in pairs(LunaUF.Units.frameList) do
-		if frame.indicators and frame.indicators.ready then
-			UpdateReady(LunaUF.db.profile.units[frame.unitGroup].indicators.icons.ready.enabled, frame.indicators.ready, frame.unit)
-		end
-	end
-end
-
-local function endReadyCheck()
-	if readychecking then
-		readychecking = nil
-		afterreadycheck = true
-		LunaUF:ScheduleEvent("LunaEndReadyCheckAfter", endReadyCheck, 10)
-	else
-		afterreadycheck = nil
+local function clearReadyCheck()
+	-- clear the table if check not yet began
+	if not readychecking then
+		LunaUF:Debug("Starting readycheck")
+		readychecking = true
 		for groupmember,ready in pairs(readycheck) do
 			readycheck[groupmember] = nil
 		end
-		updateFramesReady()
 	end
-end
-
-local function clearReadyCheck()
-	LunaUF:Debug("Starting readycheck")
-	numVoted = 0
-	readychecking = true
-	afterreadycheck = nil
-	for groupmember,ready in pairs(readycheck) do
-		readycheck[groupmember] = nil
-	end
-	LunaUF:ScheduleEvent("LunaEndReadyCheck", endReadyCheck, 31)
 end
 
 local function AceOnEvent(arg1)
@@ -288,56 +257,55 @@ local function AceOnEvent(arg1)
 			if frame.indicators and frame.indicators.rezz then
 				if frame.unit and UnitName(frame.unit) == arg1 then
 					UpdateRezz(LunaUF.db.profile.units[frame.unitGroup].indicators.icons.rezz.enabled, frame.indicators.rezz, frame.unit)
+				else
+					frame.indicators.rezz:Hide()
 				end
 			end
 		end
-		return
-	elseif event == "CHAT_MSG_ADDON" then
-		if arg1 == "CTRA" then
-			if arg2 == "CHECKREADY" then
-				clearReadyCheck()
-				readycheck[arg4] = 1 -- leader always ready
-				numVoted = numVoted + 1
-				updateFramesReady()
-			elseif arg2 == "READY" then
-				readycheck[arg4] = 1
-				numVoted = numVoted + 1
-				if numVoted >= GetNumRaidMembers() then
-					LunaUF:CancelScheduledEvent("LunaEndReadyCheck")
-					endReadyCheck()
-				end
-				updateFramesReady()
-			elseif arg2 == "NOTREADY" then
-				readycheck[arg4] = 2
-				numVoted = numVoted + 1
-				if numVoted >= GetNumRaidMembers() then
-					LunaUF:CancelScheduledEvent("LunaEndReadyCheck")
-					endReadyCheck()
-				end
-				updateFramesReady()
-			end
-		end
-		return
 	elseif event == "CHAT_MSG_SYSTEM" then
 		-- loot master
 		local _,_,name = string.find(arg1, L["(%a+) is now the loot master."])
+		if name then lootmaster = name return end
+
+		-- Ready check can only be initiated by leader
+		local i,_,name = string.find(arg1, L["(%a+) has initiated a readycheck"])
 		if name then
-			lootmaster = name
-		end
-	elseif event == "PARTY_LOOT_METHOD_CHANGED" then
-		lootmaster = GetLootMaster()  -- update loot master
-	else
-		LunaUF:Debug("Unhandled Indicator AceOnEvent: %s", event)
-		return
-	end
-	for _,frame in pairs(LunaUF.Units.frameList) do
-		if frame.indicators and frame.indicators.masterLoot then
-			if frame.unit and UnitName(frame.unit) == lootmaster then
-				frame.indicators.masterLoot:Show()
+			clearReadyCheck()
+			readycheck[name] = 1 -- leader is always ready
+			LunaUF:Debug("Leader %s ready", name)
+		else
+			i = string.find(arg1, L["Starting ready check…"])
+			if i then
+				clearReadyCheck()
+				readycheck[UnitName("player")] = 1 -- player is leader
+				LunaUF:Debug("Self ready")
 			else
-				frame.indicators.masterLoot:Hide()
+				i,_,name = string.find(arg1, L["(%a+) is not ready"])
+				if not name then
+					_,i,name = string.find(arg1, L["The following players are AFK: (%a+)"])
+					if name then
+						readychecking = nil
+						LunaUF:Debug("%s AFK", name)
+						readycheck[name] = 0
+						for name in string.gfind(string.sub(arg1, i+1), L[", (%a+)"]) do
+							readycheck[name] = 0
+							LunaUF:Debug("%s AFK", name)
+						end
+					end
+				else
+					readycheck[name] = 0
+					LunaUF:Debug("%s not ready", name)
+				end
 			end
 		end
+		if i then return end
+
+	elseif event == "PARTY_LOOT_METHOD_CHANGED" then
+		lootmaster = GetLootMaster()  -- update loot master
+	elseif event == "READY_CHECK" then
+		clearReadyCheck()
+	else
+		LunaUF:Debug("Unhandled Indicator AceOnEvent: %s", event)
 	end
 end
 
@@ -355,8 +323,18 @@ end
 local function OnEvent()
 	local frame = this:GetParent()
 	local config = LunaUF.db.profile.units[frame.unitGroup].indicators.icons
-
-	if event == "PARTY_LEADER_CHANGED" then
+	if event == "CHAT_MSG_ADDON" then
+		--if arg1 == "CTRA" then
+		--	if arg2 == "CHECKREADY" then
+		--		clearReadyCheck()
+		--	elseif arg2 == "READY" then
+		--		--arg4 voted ready
+		--	elseif arg2 == "NOTREADY" then
+		--		--arg4 voted not ready
+		--	end
+		--end
+		if frame.indicators.ready then UpdateReady(config.ready.enabled, frame.indicators.ready, frame.unit) end
+	elseif event == "PARTY_LEADER_CHANGED" then
 		if frame.indicators.leader then UpdateLeader(config.leader.enabled, frame.indicators.leader, frame.unit) end
 	elseif event == "PARTY_MEMBERS_CHANGED" or event == "RAID_ROSTER_UPDATE" then
 		if frame.indicators.masterLoot then UpdateMasterLoot(config.masterLoot.enabled, frame.indicators.masterLoot, frame.unit) end
@@ -371,6 +349,8 @@ local function OnEvent()
 		if frame.indicators.pvprank then UpdatePVPRank(config.pvprank.enabled, frame.indicators.pvprank, frame.unit) end
 	elseif event == "PARTY_LOOT_METHOD_CHANGED" then
 		if frame.indicators.masterLoot then UpdateMasterLoot(config.masterLoot.enabled, frame.indicators.masterLoot, frame.unit) end
+	elseif event == "CHAT_MSG_SYSTEM" then
+		if readychecking and frame.indicators.ready then UpdateReady(config.ready.enabled, frame.indicators.ready, frame.unit) end
 	else
 		LunaUF:Debug("Unhandled Indicator OnEvent: %s", event)
 	end
@@ -395,11 +375,7 @@ function Indicators:OnEnable(frame)
 			end
 		end
 	end
-	
-	
-	if not LunaUF:IsEventRegistered("CHAT_MSG_ADDON", AceOnEvent) then
-		LunaUF:RegisterEvent("CHAT_MSG_ADDON", AceOnEvent)
-	end
+
 	if not LunaUF:IsEventRegistered("PARTY_LOOT_METHOD_CHANGED", AceOnEvent) then
 		LunaUF:RegisterEvent("PARTY_LOOT_METHOD_CHANGED", AceOnEvent)
 	end
@@ -428,6 +404,7 @@ function Indicators:OnDisable(frame)
 end
 
 function Indicators:FullUpdate(frame)
+	local lootmethod, pid, rid = GetLootMethod()
 	local config = LunaUF.db.profile.units[frame.unitGroup].indicators.icons
 	for name,settings in pairs(config) do
 		if name ~= "enabled" then

@@ -103,28 +103,6 @@
 			</OnSizeChanged>
 		</Scripts>
 		<Frames>
-			<Frame name="$parent_Border" frameStrata="BACKGROUND">
-				<Anchors>
-					<Anchor point="TOPLEFT">
-						<Offset x="-4" y="4" />
-					</Anchor>
-					<Anchor point="TOPRIGHT">
-						<Offset x="4" y="4" />
-					</Anchor>
-					<Anchor point="BOTTOMLEFT">
-						<Offset x="-4" y="-4" />
-					</Anchor>
-					<Anchor point="BOTTOMRIGHT">
-						<Offset x="4" y="-4" />
-					</Anchor>
-				</Anchors>
-				<Backdrop edgeFile="Interface\Tooltips\UI-Tooltip-Border" tile="true">
-					<BackgroundInsets left="5" right="5" top="3" bottom="1" />
-					<TileSize val="12" />
-					<EdgeSize val="4" />
-					<Color r="0.157" g="0.08" b="0.06" a="1" />
-				</Backdrop>
-			</Frame>
 			<Button name="$parent_Resize" frameStrata="HIGH">
 				<Size x="14" y="14" />
 				<Anchors>
@@ -136,9 +114,6 @@
 					</OnMouseDown>
 					<OnMouseUp>
 						this:GetParent():StopMovingOrSizing()
-						DPSMateSettings["windows"][this:GetParent().Key]["savsize"] = {}
-						DPSMateSettings["windows"][this:GetParent().Key]["savsize"][1] = this:GetParent():GetWidth()
-						DPSMateSettings["windows"][this:GetParent().Key]["savsize"][2] = this:GetParent():GetHeight()
 					</OnMouseUp>
 				</Scripts>
 				<NormalTexture file="Interface\AddOns\DPSMate\images\UI-ChatIM-SizeGrabber-Up"/>
@@ -189,11 +164,6 @@
 							DPSMate.Options:OpenMenu(1, this:GetParent())
 						else
 							this:GetParent():StopMovingOrSizing()
-							local point, _, _, xOfs, yOfs = this:GetParent():GetPoint()
-							DPSMateSettings["windows"][this:GetParent().Key]["position"] = {}
-							DPSMateSettings["windows"][this:GetParent().Key]["position"][1] = point
-							DPSMateSettings["windows"][this:GetParent().Key]["position"][2] = xOfs
-							DPSMateSettings["windows"][this:GetParent().Key]["position"][3] = yOfs
 						end
 					</OnMouseUp>
 				</Scripts>

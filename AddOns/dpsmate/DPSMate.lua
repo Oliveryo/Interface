@@ -1,6 +1,6 @@
 -- Global Variables
 DPSMate = {}
-DPSMate.VERSION = 89
+DPSMate.VERSION = 84
 DPSMate.LOCALE = GetLocale()
 DPSMate.SYNCVERSION = DPSMate.VERSION..DPSMate.LOCALE
 DPSMate.Parser = {}
@@ -165,30 +165,11 @@ function DPSMate:InitializeFrames()
 			f.Key=k
 		end
 		local frame = _G("DPSMate_"..val["name"])
-		frame.fborder = _G("DPSMate_"..val["name"].."_Border")
-		DPSMateSettings["windows"][k]["hidden"] = false
+			
 		frame:SetToplevel(true)
-		
-		if (val["position"] and val["position"][1]) then
-			frame:ClearAllPoints()
-			frame:SetPoint(val["position"][1], UIParent, val["position"][1], val["position"][2], val["position"][3])
-		end
-		if (val["savsize"] and val["savsize"][1]) then
-			frame:SetWidth(val["savsize"][1])
-			frame:SetHeight(val["savsize"][2])
-		end
 		
 		DPSMate.Options:ToggleDrewDrop(1, DPSMate.DB:GetOptionsTrue(1, k), frame)
 		DPSMate.Options:ToggleDrewDrop(2, DPSMate.DB:GetOptionsTrue(2, k), frame)
-		
-		frame.fborder:SetAlpha(val["borderopacity"] or 0)
-		frame.fborder:SetFrameStrata(DPSMate.Options.stratas[val["borderstrata"] or 1])
-		frame.fborder:SetBackdrop({ 
-								  bgFile = "", 
-								  edgeFile = DPSMate.Options.bordertextures[val["bordertexture"] or "UI-Tooltip-Border"], tile = true, tileSize = 12, edgeSize = 10, 
-								  insets = { left = 5, right = 5, top = 3, bottom = 1 }
-								})
-		frame.fborder:SetBackdropBorderColor(val["contentbordercolor"][1], val["contentbordercolor"][2], val["contentbordercolor"][3])
 		
 		local head = _G("DPSMate_"..val["name"].."_Head")
 		head.font = _G("DPSMate_"..val["name"].."_Head_Font")
@@ -232,7 +213,6 @@ function DPSMate:InitializeFrames()
 		_G("DPSMate_"..val["name"].."_ScrollFrame_Child_Total"):SetStatusBarTexture(DPSMate.Options.statusbars[val["bartexture"]])
 		_G("DPSMate_"..val["name"].."_ScrollFrame_Child_Total"):SetStatusBarColor(1,1,1,val["totopacity"] or 1)
 		_G("DPSMate_"..val["name"].."_ScrollFrame_Child_Total_BG"):SetTexture(DPSMate.Options.statusbars[val["bartexture"]])
-		_G("DPSMate_"..val["name"].."_ScrollFrame_Child_Total_BG"):SetAlpha(val["totopacity"] or 1)
 		_G("DPSMate_"..val["name"].."_ScrollFrame_Child_Total_Name"):SetFont(DPSMate.Options.fonts[val["barfont"]], val["barfontsize"], DPSMate.Options.fontflags[val["barfontflag"]])
 		_G("DPSMate_"..val["name"].."_ScrollFrame_Child_Total_Value"):SetFont(DPSMate.Options.fonts[val["barfont"]], val["barfontsize"], DPSMate.Options.fontflags[val["barfontflag"]])
 		for i=1, 40 do

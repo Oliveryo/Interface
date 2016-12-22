@@ -116,7 +116,7 @@ function DPSMate.Modules.FriendlyFireTaken:GetSettingValues(arr, cbt, k,ecbt)
 		if DPSMateSettings["columnsfriendlyfiretaken"][3] then str[2] = " ("..strformat("%.1f", 100*dmgr/totr).."%)" end
 		if DPSMateSettings["columnsfriendlyfiretaken"][2] then str[3] = "("..strformat("%.1f", dmg/cbt)..")"; strt[1] = "("..strformat("%.1f", tot/cbt)..")" end
 		if DPSMateSettings["columnsfriendlyfiretaken"][4] then str[4] = " ("..strformat("%.1f", dmg/(ecbt[pname] or cbt))..p..")" end
-		tinsert(name, pname) 
+		tinsert(name, pname)
 		tinsert(value, str[3]..str[1]..str[4]..str[2])
 		tinsert(perc, 100*(dmgr/sortr))
 	end

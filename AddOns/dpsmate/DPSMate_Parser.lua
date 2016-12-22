@@ -5,11 +5,6 @@
 -- CHAT_MSG_SPELL_FAILED_LOCALPLAYER -> Examples: You fail to cast Heal: Interrupted. You fail to perform Bear Form: Not enough mana
 -- SPELLCAST_INTERRUPTED
 
-BINDING_HEADER_DPSMATE = "DPSMate"
-BINDING_NAME_DPSMATE_REPORT = DPSMate.L["togglereportframe"]
-BINDING_NAME_DPSMATE_TOGGLE = DPSMate.L["toggleframes"]
-BINDING_NAME_DPSMATE_RESET = DPSMate.L["resetdpsmate"]
-
 -- Global Variables
 DPSMate.Parser.procs = {
 	-- General
@@ -92,7 +87,6 @@ DPSMate.Parser.procs = {
 	[DPSMate.BabbleSpell:GetTranslation("Cold Snap")] = true,
 	[DPSMate.BabbleSpell:GetTranslation("Presence of Mind")] = true,
 	[DPSMate.BabbleSpell:GetTranslation("Ice Block")] = true,
-	[DPSMate.BabbleSpell:GetTranslation("Evocation")] = true,
 	
 	-- Priest
 	[DPSMate.BabbleSpell:GetTranslation("Power Infusion")] = true,
@@ -137,7 +131,6 @@ DPSMate.Parser.procs = {
 	[DPSMate.BabbleSpell:GetTranslation("Vampirism")] = true,
 	[DPSMate.BabbleSpell:GetTranslation("Nightfall")] = true,
 	[DPSMate.BabbleSpell:GetTranslation("Soul Link")] = true,
-	[DPSMate.BabbleSpell:GetTranslation("Life Tap")] = true,
 	
 	-- Warrior
 	[DPSMate.BabbleSpell:GetTranslation("Cheat Death")] = true,

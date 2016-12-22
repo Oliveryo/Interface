@@ -255,7 +255,7 @@ function DPSMate.Modules.AbsorbsTaken:GetSettingValues(arr, cbt, k,ecbt)
 		if DPSMateSettings["columnsabsorbstaken"][2] then str[2] = " ("..strformat("%.1f", 100*varea/totr).."%)" end
 		if DPSMateSettings["columnsabsorbstaken"][3] then str[3] = " ("..strformat("%.1f", va/cbt)..p..")" end
 		if DPSMateSettings["columnsabsorbstaken"][4] then str[4] = " ("..strformat("%.1f", va/(ecbt[pname] or cbt))..p..")" end
-		tinsert(name, pname) 
+		tinsert(name, pname)
 		tinsert(value, str[1]..str[3]..str[4]..str[2])
 		tinsert(perc, 100*(varea/sortr))
 	end

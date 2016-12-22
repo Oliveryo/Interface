@@ -102,7 +102,7 @@ function DPSMate.Modules.DTPS:GetSettingValues(arr, cbt, k,ecbt)
 		if DPSMateSettings["columnsdtps"][3] then str[2] = " ("..strformat("%.1f", 100*dmgr/totr).."%)" end
 		if DPSMateSettings["columnsdtps"][1] then str[3] = "("..DPSMate:Commas(dmg, k)..p..")"; strt[1] = "("..DPSMate:Commas(tot, k)..p..")" end
 		if DPSMateSettings["columnsdtps"][4] then str[4] = " ("..strformat("%.1f", dmg/(ecbt[pname] or cbt))..p..")" end
-		tinsert(name, pname) 
+		tinsert(name, pname)
 		tinsert(value, str[3]..str[1]..str[4]..str[2])
 		tinsert(perc, 100*(dmgr/sortr))
 	end

@@ -173,12 +173,6 @@ function DPSMate.DB:OnEvent(event)
 						cbtdisplay = false,
 						barbg = false,
 						totopacity = 1.0,
-						borderopacity = 1.0,
-						contentbordercolor = {0,0,0},
-						borderstrata = 1,
-						bordertexture = "UI-Tooltip-Border",
-						position = {"CENTER",0,0},
-						savsize = {150,100},
 					}
 				},
 				lock = false,
@@ -583,22 +577,6 @@ function DPSMate.DB:OnEvent(event)
 		end
 		if not DPSMateSettings["targetscale"] then
 			DPSMateSettings["targetscale"] = 0.58
-		end
-		
-		-- Settings for each window
-		for num, val in pairs(DPSMateSettings["windows"]) do
-			if not val["contentbordercolor"] then
-				DPSMateSettings["windows"][num]["contentbordercolor"] = {0,0,0}
-			end
-			if not val["borderstrata"] then
-				DPSMateSettings["windows"][num]["borderstrata"] = 1
-			end
-			if not val["bordertexture"] then
-				DPSMateSettings["windows"][num]["bordertexture"] = "UI-Tooltip-Border"
-			end
-			if not val["borderopacity"] then
-				DPSMateSettings["windows"][num]["borderopacity"] = 1
-			end
 		end
 		
 		if DPSMateCombatTime == nil then
